@@ -82,4 +82,28 @@ export class ServicioDashboard {
       };
     }
   }
+
+  static async obtenerVideoPorId(id: string): Promise<ItemYoutubeFeed | null> {
+    try {
+      const item = await ServicioContenidoFeed.obtenerItemPorId(id);
+      if (!item || item.tipo !== "youtube") return null;
+
+      return {
+        id: item.id,
+        titulo: item.titulo,
+        duracion: item.duracionOLectura || "Video",
+        canal: item.fuenteOCanal || "YouTube",
+        enlace: item.enlace,
+        imagenMiniatura: item.imagen,
+        etiqueta: item.categoria || "YouTube",
+        descripcion: item.descripcion || `Publicado por ${item.fuenteOCanal || "YouTube"}.`,
+        destacado: item.destacado || false,
+        likesCount: item.likesCount || 0,
+        dislikesCount: item.dislikesCount || 0,
+      };
+    } catch (error) {
+      console.error(`Error al obtener video con ID ${id} en ServicioDashboard:`, error);
+      return null;
+    }
+  }
 }

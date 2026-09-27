@@ -14,6 +14,7 @@ interface Props {
   placeholder?: string;
   options: Option[];
   required?: boolean;
+  class?: string;
 }
 
 const {
@@ -22,10 +23,11 @@ const {
   placeholder = "Selecciona",
   options,
   required = false,
+  class: className,
 } = Astro.props;
 ---
 
-<div class="group/field flex flex-col gap-2" data-select data-required={required}>
+<div class:list={["group/field flex flex-col justify-between gap-2 h-full", className]} data-select data-required={required}>
   <span class={fieldLabel}>
     {label}
   </span>

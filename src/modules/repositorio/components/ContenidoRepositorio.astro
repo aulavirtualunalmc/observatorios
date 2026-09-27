@@ -6,30 +6,24 @@ import {
   LibraryIcon,
   RoundedMagnifierZoomInIcon,
   CloseCircleIcon,
-  FileTextIcon,
-  UsersGroupRoundedIcon,
-  GlobeIcon,
-  BookBookmarkIcon,
   LayersMinimalisticIcon,
-  AltArrowDownIcon,
-  CheckCircleIcon,
+  BookBookmarkIcon,
+  AltArrowLeftIcon,
+  AltArrowRightIcon,
 } from "@solar-icons/react/outline";
 
 const documentos = await ServicioRepositorio.obtenerDocumentos();
 
-// Agrupar documentos por categoría
-const gruposPorCategoria = new Map<string, typeof documentos>();
+// Extraer categorías únicas y conteos
+const conteosPorCategoria = new Map<string, number>();
 
 documentos.forEach((doc) => {
   const cat = doc.categoria?.trim() || "Otras Investigaciones";
-  if (!gruposPorCategoria.has(cat)) {
-    gruposPorCategoria.set(cat, []);
-  }
-  gruposPorCategoria.get(cat)!.push(doc);
+  conteosPorCategoria.set(cat, (conteosPorCategoria.get(cat) || 0) + 1);
 });
 
 // Ordenar categorías (colocar "Otras Investigaciones" al final)
-const listaCategorias = Array.from(gruposPorCategoria.keys()).sort((a, b) => {
+const listaCategorias = Array.from(conteosPorCategoria.keys()).sort((a, b) => {
   if (a.toLowerCase().includes("otras") || a.toLowerCase().includes("general")) return 1;
   if (b.toLowerCase().includes("otras") || b.toLowerCase().includes("general")) return -1;
   return a.localeCompare(b);
@@ -59,128 +53,94 @@ const listaCategorias = Array.from(gruposPorCategoria.keys()).sort((a, b) => {
         </h1>
 
         <p class="m-0 text-sm text-[#787774] font-medium tracking-tight">
-          Explora la producción académica agrupada por categorías o consulta fichas técnicas individuales.
+          Explora la producción académica, investigaciones y publicaciones del repositorio institucional.
         </p>
       </div>
 
-      <!-- Filtros: Desplegable Personalizado a la Izquierda y Buscador a la Derecha -->
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-        <!-- 1. Desplegable Personalizado de Categorías (Lado Izquierdo) -->
-        <div class="relative inline-block text-left">
+      <!-- Buscador Inteligente en Cabecera -->
+      <div class="relative w-full sm:w-80 lg:w-96">
+        <div class="flex items-center gap-2 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full border border-white/80 shadow-[0_4px_16px_-4px_rgba(9,60,120,0.1)] focus-within:border-[#0064c1]/40 focus-within:shadow-[0_4px_20px_-2px_rgba(0,100,193,0.18)] transition-all">
+          <RoundedMagnifierZoomInIcon size={16} className="text-[#787774] shrink-0" />
+          <input
+            id="buscador-repositorio"
+            type="text"
+            autocomplete="off"
+            placeholder="Buscar por título, autor, país..."
+            class="bg-transparent border-none outline-none text-xs font-medium text-[#0a0a0a] placeholder:text-[#787774] w-full"
+          />
           <button
+            id="btn-limpiar-busqueda"
             type="button"
-            id="btn-dropdown-categoria"
-            class="group/drop flex items-center justify-between gap-2.5 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full border border-white/80 shadow-[0_4px_16px_-4px_rgba(9,60,120,0.1)] hover:border-[#0064c1]/40 focus:border-[#0064c1] transition-all cursor-pointer w-full sm:w-auto min-w-[210px]"
-            aria-expanded="false"
-            aria-haspopup="true"
+            class="hidden text-[#787774] hover:text-[#0a0a0a] transition-colors cursor-pointer"
+            aria-label="Limpiar búsqueda"
           >
-            <div class="flex items-center gap-2 min-w-0">
-              <LayersMinimalisticIcon size={16} className="text-[#0064c1] shrink-0" />
-
-              <span
-                id="texto-categoria-activa"
-                class="text-xs font-bold text-[#0a0a0a] truncate max-w-[150px] sm:max-w-[170px]"
-              >
-                Todas las categorías
-              </span>
-            </div>
-            <span
-              id="badge-total-categoria-activa"
-              class="font-mono text-[0.68rem] font-bold text-[#0064c1] bg-[#0064c1]/10 px-2 py-0.5 rounded-full shrink-0"
-            >
-              {documentos.length}
-            </span>
-            <AltArrowDownIcon
-              size={14}
-              strokeWidth={2.5}
-              className="text-[#787774] group-hover/drop:text-[#0064c1] transition-transform duration-200 shrink-0"
-              id="flecha-dropdown-categoria"
-            />
+            <CloseCircleIcon size={15} />
           </button>
-
-          <!-- Menú Flotante Personalizado del Desplegable -->
-          <div
-            id="menu-desplegable-categorias"
-            class="hidden absolute left-0 sm:left-0 top-[115%] z-50 flex-col gap-1 p-2 rounded-2xl bg-white/95 backdrop-blur-xl border border-white/90 shadow-[0_20px_40px_-10px_rgba(9,60,120,0.22),0_1px_3px_rgba(0,0,0,0.04)] animate-rise min-w-[260px] max-w-sm max-h-72 overflow-y-auto custom-scrollbar"
-          >
-            <!-- Opción: Todas las Categorías -->
-            <button
-              type="button"
-              data-cat-valor="todas"
-              data-cat-label="Todas las categorías"
-              data-cat-total={documentos.length}
-              class="opcion-categoria-item flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl text-left hover:bg-[#0064c1]/10 text-xs text-[#0a0a0a] font-semibold transition-colors cursor-pointer w-full group bg-[#0064c1]/[0.08]"
-            >
-              <div class="flex items-center gap-2 min-w-0">
-                <LayersMinimalisticIcon size={15} className="text-[#0064c1] shrink-0" />
-                <span class="truncate">Todas las categorías</span>
-              </div>
-              <span class="font-mono text-[0.68rem] font-bold text-[#0064c1] bg-[#0064c1]/10 px-2 py-0.5 rounded-full shrink-0">
-                {documentos.length}
-              </span>
-            </button>
-
-            <div class="h-px bg-black/[0.05] my-1 mx-1"></div>
-
-            <!-- Opciones individuales de categoría -->
-            {
-              listaCategorias.map((cat) => {
-                const totalDocs = gruposPorCategoria.get(cat)?.length || 0;
-                return (
-                  <button
-                    type="button"
-                    data-cat-valor={cat.toLowerCase()}
-                    data-cat-label={cat}
-                    data-cat-total={totalDocs}
-                    class="opcion-categoria-item flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl text-left hover:bg-[#0064c1]/10 text-xs text-[#0a0a0a] font-medium transition-colors cursor-pointer w-full group"
-                  >
-                    <div class="flex items-center gap-2 min-w-0">
-                      <BookBookmarkIcon size={14} className="text-[#787774] group-hover:text-[#0064c1] shrink-0" />
-                      <span class="truncate group-hover:text-[#0064c1]">{cat}</span>
-                    </div>
-                    <span class="font-mono text-[0.68rem] font-semibold text-[#787774] bg-black/[0.04] group-hover:bg-[#0064c1]/10 group-hover:text-[#0064c1] px-2 py-0.5 rounded-full shrink-0">
-                      {totalDocs}
-                    </span>
-                  </button>
-                );
-              })
-            }
-          </div>
         </div>
 
-        <!-- 2. Buscador Inteligente (Lado Derecho) -->
-        <div class="relative w-full sm:w-72">
-          <div class="flex items-center gap-2 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full border border-white/80 shadow-[0_4px_16px_-4px_rgba(9,60,120,0.1)] focus-within:border-[#0064c1]/40 focus-within:shadow-[0_4px_20px_-2px_rgba(0,100,193,0.18)] transition-all">
-            <RoundedMagnifierZoomInIcon size={16} className="text-[#787774] shrink-0" />
-            <input
-              id="buscador-repositorio"
-              type="text"
-              autocomplete="off"
-              placeholder="Buscar por título, autor, país..."
-              class="bg-transparent border-none outline-none text-xs font-medium text-[#0a0a0a] placeholder:text-[#787774] w-full"
-            />
-            <button
-              id="btn-limpiar-busqueda"
-              type="button"
-              class="hidden text-[#787774] hover:text-[#0a0a0a] transition-colors cursor-pointer"
-              aria-label="Limpiar búsqueda"
-            >
-              <CloseCircleIcon size={15} />
-            </button>
-          </div>
-
-          <!-- Panel Desplegable de Sugerencias Inteligentes -->
-          <div
-            id="panel-sugerencias-repositorio"
-            class="hidden absolute left-0 right-0 top-[115%] z-50 flex-col gap-1 p-2 rounded-2xl bg-white/95 backdrop-blur-xl border border-white/90 shadow-[0_16px_36px_-10px_rgba(9,60,120,0.22),0_1px_3px_rgba(0,0,0,0.04)] animate-rise max-h-72 overflow-y-auto custom-scrollbar"
-          >
-            <!-- Las sugerencias se inyectan dinámicamente con JS -->
-          </div>
+        <!-- Panel Desplegable de Sugerencias Inteligentes -->
+        <div
+          id="panel-sugerencias-repositorio"
+          class="hidden absolute left-0 right-0 top-[115%] z-50 flex-col gap-1 p-2 rounded-2xl bg-white/95 backdrop-blur-xl border border-white/90 shadow-[0_16px_36px_-10px_rgba(9,60,120,0.22),0_1px_3px_rgba(0,0,0,0.04)] animate-rise max-h-72 overflow-y-auto custom-scrollbar"
+        >
+          <!-- Las sugerencias se inyectan dinámicamente con JS -->
         </div>
       </div>
     </header>
 
-    <!-- Contenedor Principal de Secciones por Categoría o Empty State -->
+    <!-- Barra de Filtro de Categorías -->
+    {
+      listaCategorias.length > 0 && (
+        <div class="relative z-10 flex flex-col gap-3">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[#0064c1]">
+              Filtrar por Categoría
+            </span>
+            <span class="text-xs text-[#787774] font-medium">
+              {documentos.length} {documentos.length === 1 ? "documento" : "documentos en total"}
+            </span>
+          </div>
+
+          <div
+            class="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar flex-nowrap sm:flex-wrap"
+            id="contenedor-tabs-categorias"
+          >
+            <!-- Tab: Todas las categorías -->
+            <button
+              type="button"
+              data-cat-valor="todas"
+              class="btn-tab-categoria active relative inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs cursor-pointer shrink-0"
+            >
+              <LayersMinimalisticIcon size={15} />
+              <span>Todas</span>
+              <span class="tab-badge font-mono text-[0.68rem] px-2 py-0.5 rounded-full font-bold">
+                {documentos.length}
+              </span>
+            </button>
+
+            <!-- Tabs individuales de categoría -->
+            {listaCategorias.map((cat) => {
+              const totalDocs = conteosPorCategoria.get(cat) || 0;
+              return (
+                <button
+                  type="button"
+                  data-cat-valor={cat.toLowerCase()}
+                  class="btn-tab-categoria inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold cursor-pointer shrink-0"
+                >
+                  <BookBookmarkIcon size={14} />
+                  <span>{cat}</span>
+                  <span class="tab-badge font-mono text-[0.68rem] font-bold px-2 py-0.5 rounded-full">
+                    {totalDocs}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )
+    }
+
+    <!-- Contenedor Principal en Grid Continuo de Filas y Columnas -->
     {
       documentos.length === 0 ? (
         <div class="flex flex-col items-center justify-center p-12 sm:p-16 rounded-[32px] bg-white/95 border border-white/80 shadow-[0_20px_45px_-18px_rgba(9,60,120,0.14),0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-md text-center max-w-md mx-auto w-full gap-3 animate-rise">
@@ -196,57 +156,29 @@ const listaCategorias = Array.from(gruposPorCategoria.keys()).sort((a, b) => {
           </div>
         </div>
       ) : (
-        <div id="contenedor-secciones-repositorio" class="flex flex-col gap-12">
-          {
-            listaCategorias.map((nombreCategoria) => {
-              const docsEnCat = gruposPorCategoria.get(nombreCategoria) || [];
-              return (
-                <section
-                  class="seccion-categoria-repositorio flex flex-col gap-5 animate-rise"
-                  data-categoria-nombre={nombreCategoria.toLowerCase()}
-                >
-                  {/* Encabezado de la Sección de Categoría */}
-                  <div class="flex items-center justify-between gap-3 pb-3 border-b border-black/[0.06]">
-                    <div class="flex items-center gap-3">
-                      <span
-                        class="grid h-9 w-9 place-items-center rounded-xl text-[#0064c1] bg-[#0064c1]/10 border border-[#0064c1]/20 shadow-xs"
-                      >
-                        <BookBookmarkIcon size={18} strokeWidth={2} />
-                      </span>
-                      <div class="flex items-center gap-2.5 flex-wrap">
-                        <h2 class="m-0 text-lg md:text-xl font-bold text-[#0a0a0a] tracking-tight">
-                          {nombreCategoria}
-                        </h2>
-                        <span class="inline-flex items-center font-mono text-xs font-bold text-[#0064c1] bg-[#0064c1]/10 px-2.5 py-0.5 rounded-full border border-[#0064c1]/20">
-                          {docsEnCat.length} {docsEnCat.length === 1 ? "documento" : "documentos"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+        <div id="contenedor-catalogo-repositorio" class="flex flex-col gap-8">
+          <!-- Grid Uniforme de Documentos en Filas y Columnas -->
+          <div
+            id="grid-documentos-repositorio"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
+          >
+            {documentos.map((doc) => (
+              <div
+                class="item-documento-repositorio h-full"
+                data-titulo={doc.titulo.toLowerCase()}
+                data-linea={doc.lineaInvestigacion.toLowerCase()}
+                data-categoria={(doc.categoria || "otras investigaciones").toLowerCase()}
+                data-pais={doc.pais.toLowerCase()}
+                data-fuente={doc.tipoFuente.toLowerCase()}
+                data-autores={doc.autores.join(" ").toLowerCase()}
+                data-texto={`${doc.titulo} ${doc.lineaInvestigacion} ${doc.categoria || ""} ${doc.pais} ${doc.tipoFuente} ${doc.autores?.join(" ") || ""}`.toLowerCase()}
+              >
+                <CardDocumentoRepositorio documento={doc} />
+              </div>
+            ))}
+          </div>
 
-                  {/* Grid de Cards de esta Categoría */}
-                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                    {docsEnCat.map((doc) => (
-                      <div
-                        class="item-documento-repositorio"
-                        data-titulo={doc.titulo.toLowerCase()}
-                        data-linea={doc.lineaInvestigacion.toLowerCase()}
-                        data-categoria={(doc.categoria || "otras investigaciones").toLowerCase()}
-                        data-pais={doc.pais.toLowerCase()}
-                        data-fuente={doc.tipoFuente.toLowerCase()}
-                        data-autores={doc.autores.join(" ").toLowerCase()}
-                        data-texto={`${doc.titulo} ${doc.lineaInvestigacion} ${doc.categoria || ""} ${doc.pais} ${doc.tipoFuente} ${doc.autores?.join(" ") || ""}`.toLowerCase()}
-                      >
-                        <CardDocumentoRepositorio documento={doc} />
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              );
-            })
-          }
-
-          {/* Mensaje de Sin Resultados tras filtrar */}
+          <!-- Mensaje de Sin Resultados tras filtrar -->
           <div
             id="mensaje-sin-resultados"
             class="hidden flex-col items-center justify-center p-12 rounded-[28px] bg-white/95 border border-white/80 shadow-[0_20px_45px_-18px_rgba(9,60,120,0.14)] text-center max-w-md mx-auto w-full gap-2 animate-rise"
@@ -259,21 +191,187 @@ const listaCategorias = Array.from(gruposPorCategoria.keys()).sort((a, b) => {
               Intenta cambiar la categoría seleccionada o buscar con otros términos.
             </p>
           </div>
+
+          <!-- Controles de Paginación Elegante (hasta 9 por página) -->
+          <div
+            id="contenedor-paginacion-repositorio"
+            class="hidden flex-col sm:flex-row items-center justify-between gap-4 pt-6 pb-2 border-t border-black/[0.06]"
+          >
+            <div class="text-xs text-[#787774] font-medium" id="info-paginacion">
+              Mostrando <span id="pag-desde" class="font-bold text-[#0a0a0a]">1</span> - <span id="pag-hasta" class="font-bold text-[#0a0a0a]">9</span> de <span id="pag-total" class="font-bold text-[#0a0a0a]">0</span> documentos
+            </div>
+
+            <div class="flex items-center gap-1.5" id="controles-paginacion">
+              <button
+                type="button"
+                id="btn-pag-prev"
+                class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-xs font-semibold bg-white/95 hover:bg-white text-[#2f3437] hover:text-[#0064c1] border border-black/[0.08] hover:border-[#0064c1]/30 shadow-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-[#2f3437] disabled:hover:border-black/[0.08] active:scale-95"
+                aria-label="Página anterior"
+              >
+                <AltArrowLeftIcon size={14} strokeWidth={2.2} />
+                <span>Anterior</span>
+              </button>
+
+              <div id="numeros-paginacion" class="flex items-center gap-1">
+                <!-- Se generan dinámicamente con JS -->
+              </div>
+
+              <button
+                type="button"
+                id="btn-pag-next"
+                class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full text-xs font-semibold bg-white/95 hover:bg-white text-[#2f3437] hover:text-[#0064c1] border border-black/[0.08] hover:border-[#0064c1]/30 shadow-xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-[#2f3437] disabled:hover:border-black/[0.08] active:scale-95"
+                aria-label="Página siguiente"
+              >
+                <span>Siguiente</span>
+                <AltArrowRightIcon size={14} strokeWidth={2.2} />
+              </button>
+            </div>
+          </div>
         </div>
       )
     }
   </div>
 </div>
 
+<style>
+  /* Pestañas de categorías cuando NO están activas */
+  .btn-tab-categoria:not(.active) {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #2f3437;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-tab-categoria:not(.active) :global(svg) {
+    color: #787774;
+    transition: color 0.2s;
+  }
+  .btn-tab-categoria:not(.active) .tab-badge {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #787774;
+    transition: all 0.2s;
+  }
+
+  /* Hover cuando NO está activa */
+  .btn-tab-categoria:not(.active):hover {
+    background-color: #ffffff;
+    color: #0064c1;
+    border-color: rgba(0, 100, 193, 0.35);
+    box-shadow: 0 4px 14px -2px rgba(9, 60, 120, 0.12);
+  }
+  .btn-tab-categoria:not(.active):hover :global(svg) {
+    color: #0064c1;
+  }
+  .btn-tab-categoria:not(.active):hover .tab-badge {
+    background-color: rgba(0, 100, 193, 0.1);
+    color: #0064c1;
+  }
+
+  /* Pestaña ACTIVA */
+  .btn-tab-categoria.active {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    border: 1px solid transparent !important;
+    background-image: radial-gradient(120% 80% at 50% 0%, #ffffff42, #ffffff0a 36%, #ffffff00 54%), linear-gradient(#66b2ff, #4fa3ff 56%, #4a9ffb) !important;
+    box-shadow: inset 0 1.5px 1px rgba(255,255,255,0.5), inset 0 9px 16px -10px rgba(255,255,255,0.3), inset 0 -14px 22px -10px rgba(26,106,202,0.5), 0 4px 12px -2px rgba(58,138,244,0.4) !important;
+    cursor: default;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-tab-categoria.active :global(*) {
+    color: #ffffff !important;
+  }
+  .btn-tab-categoria.active .tab-badge {
+    background-color: rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
+  }
+  .btn-tab-categoria.active:hover {
+    filter: brightness(1.04);
+  }
+
+  /* Estilos de botones de número de página */
+  :global(.btn-num-pag) {
+    display: inline-grid;
+    place-items: center;
+    height: 32px;
+    min-width: 32px;
+    padding: 0 6px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-family: monospace;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  :global(.btn-num-pag.activo) {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    background-image: radial-gradient(120% 80% at 50% 0%, #ffffff42, #ffffff0a 36%, #ffffff00 54%), linear-gradient(#66b2ff, #4fa3ff 56%, #4a9ffb);
+    box-shadow: inset 0 1.5px 1px rgba(255,255,255,0.5), inset 0 9px 16px -10px rgba(255,255,255,0.3), inset 0 -14px 22px -10px rgba(26,106,202,0.5), 0 4px 12px -2px rgba(58,138,244,0.4);
+    border: none;
+    cursor: default;
+  }
+  :global(.btn-num-pag:not(.activo)) {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #2f3437;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+  :global(.btn-num-pag:not(.activo):hover) {
+    background-color: #ffffff;
+    color: #0064c1;
+    border-color: rgba(0, 100, 193, 0.35);
+  }
+</style>
+
 <script>
   function setupRepositorio() {
     const input = document.getElementById("buscador-repositorio") as HTMLInputElement | null;
-    const selectCategoria = document.getElementById("filtro-categoria-repositorio") as HTMLSelectElement | null;
     const btnLimpiar = document.getElementById("btn-limpiar-busqueda") as HTMLButtonElement | null;
     const panelSugerencias = document.getElementById("panel-sugerencias-repositorio") as HTMLElement | null;
     const mensajeSinResultados = document.getElementById("mensaje-sin-resultados") as HTMLElement | null;
-    const secciones = document.querySelectorAll<HTMLElement>(".seccion-categoria-repositorio");
     const items = document.querySelectorAll<HTMLElement>(".item-documento-repositorio");
+    const tabsCategoria = document.querySelectorAll<HTMLButtonElement>(".btn-tab-categoria");
+
+    // Elementos de Paginación
+    const contenedorPaginacion = document.getElementById("contenedor-paginacion-repositorio") as HTMLElement | null;
+    const pagDesde = document.getElementById("pag-desde");
+    const pagHasta = document.getElementById("pag-hasta");
+    const pagTotal = document.getElementById("pag-total");
+    const btnPagPrev = document.getElementById("btn-pag-prev") as HTMLButtonElement | null;
+    const btnPagNext = document.getElementById("btn-pag-next") as HTMLButtonElement | null;
+    const numerosPaginacion = document.getElementById("numeros-paginacion") as HTMLElement | null;
+
+    const ITEMS_POR_PAGINA = 9;
+    let paginaActual = 1;
+    let categoriaSeleccionada = "todas";
+
+    const seleccionarCategoria = (valor: string) => {
+      categoriaSeleccionada = valor.toLowerCase().trim();
+
+      tabsCategoria.forEach((tab) => {
+        const tabVal = (tab.getAttribute("data-cat-valor") || "").toLowerCase().trim();
+        const esSeleccionado = tabVal === categoriaSeleccionada;
+
+        if (esSeleccionado) {
+          tab.classList.add("active");
+        } else {
+          tab.classList.remove("active");
+        }
+      });
+
+      paginaActual = 1;
+      filtrarDocumentos();
+    };
+
+    tabsCategoria.forEach((tab) => {
+      if (!tab.getAttribute("data-init")) {
+        tab.setAttribute("data-init", "true");
+        tab.addEventListener("click", () => {
+          const valor = tab.getAttribute("data-cat-valor") || "todas";
+          seleccionarCategoria(valor);
+        });
+      }
+    });
 
     // Construir índice de términos sugeribles
     const indicesSugerencias: { tipo: "titulo" | "autor" | "pais" | "linea" | "categoria"; texto: string; label: string }[] = [];
@@ -315,48 +413,56 @@ const listaCategorias = Array.from(gruposPorCategoria.keys()).sort((a, b) => {
       });
     });
 
-    // Función unificada de filtrado (Categoría + Búsqueda de texto)
-    const filtrarDocumentos = () => {
+    // Función unificada de filtrado (Categoría + Búsqueda de texto + Paginación)
+    const filtrarDocumentos = (scrollArriba = false) => {
       const q = (input?.value || "").toLowerCase().trim();
-      const catSeleccionada = (selectCategoria?.value || "todas").toLowerCase().trim();
+      const catSeleccionada = categoriaSeleccionada.toLowerCase().trim();
 
       if (btnLimpiar) {
         btnLimpiar.classList.toggle("hidden", !q);
       }
 
-      let totalVisibles = 0;
+      // 1. Identificar todos los items que coinciden con los filtros
+      const itemsCoincidentes: HTMLElement[] = [];
 
-      secciones.forEach((seccion) => {
-        const catNombre = (seccion.getAttribute("data-categoria-nombre") || "").toLowerCase().trim();
-        const itemsDeSeccion = seccion.querySelectorAll<HTMLElement>(".item-documento-repositorio");
-        let visiblesEnSeccion = 0;
+      items.forEach((item) => {
+        const itemCat = (item.getAttribute("data-categoria") || "").toLowerCase().trim();
+        const texto = item.getAttribute("data-texto") || "";
+        const coincideCategoria = catSeleccionada === "todas" || itemCat === catSeleccionada;
+        const coincideTexto = !q || texto.includes(q);
 
-        // Comprobar si la categoría coincide
-        const coincideCategoria = catSeleccionada === "todas" || catNombre === catSeleccionada;
-
-        itemsDeSeccion.forEach((item) => {
-          const texto = item.getAttribute("data-texto") || "";
-          const coincideTexto = !q || texto.includes(q);
-
-          if (coincideCategoria && coincideTexto) {
-            item.style.display = "";
-            visiblesEnSeccion++;
-            totalVisibles++;
-          } else {
-            item.style.display = "none";
-          }
-        });
-
-        // Mostrar u ocultar toda la sección si no tiene elementos visibles
-        if (visiblesEnSeccion > 0) {
-          seccion.style.display = "";
+        if (coincideCategoria && coincideTexto) {
+          itemsCoincidentes.push(item);
         } else {
-          seccion.style.display = "none";
+          item.style.display = "none";
         }
       });
 
+      const totalCoincidentes = itemsCoincidentes.length;
+      const totalPaginas = Math.ceil(totalCoincidentes / ITEMS_POR_PAGINA) || 1;
+
+      if (paginaActual > totalPaginas) {
+        paginaActual = totalPaginas;
+      }
+      if (paginaActual < 1) {
+        paginaActual = 1;
+      }
+
+      const inicio = (paginaActual - 1) * ITEMS_POR_PAGINA;
+      const fin = Math.min(inicio + ITEMS_POR_PAGINA, totalCoincidentes);
+
+      // 2. Mostrar únicamente los items de la página actual
+      itemsCoincidentes.forEach((item, index) => {
+        if (index >= inicio && index < fin) {
+          item.style.display = "";
+        } else {
+          item.style.display = "none";
+        }
+      });
+
+      // 3. Mostrar u ocultar mensaje de sin resultados
       if (mensajeSinResultados) {
-        if (totalVisibles === 0) {
+        if (totalCoincidentes === 0) {
           mensajeSinResultados.classList.remove("hidden");
           mensajeSinResultados.classList.add("flex");
         } else {
@@ -364,7 +470,81 @@ const listaCategorias = Array.from(gruposPorCategoria.keys()).sort((a, b) => {
           mensajeSinResultados.classList.remove("flex");
         }
       }
+
+      // 4. Actualizar Barra de Paginación
+      if (contenedorPaginacion) {
+        if (totalCoincidentes === 0) {
+          contenedorPaginacion.classList.add("hidden");
+          contenedorPaginacion.classList.remove("flex");
+        } else {
+          contenedorPaginacion.classList.remove("hidden");
+          contenedorPaginacion.classList.add("flex");
+
+          if (pagDesde) pagDesde.textContent = totalCoincidentes > 0 ? (inicio + 1).toString() : "0";
+          if (pagHasta) pagHasta.textContent = fin.toString();
+          if (pagTotal) pagTotal.textContent = totalCoincidentes.toString();
+
+          if (btnPagPrev) btnPagPrev.disabled = paginaActual <= 1;
+          if (btnPagNext) btnPagNext.disabled = paginaActual >= totalPaginas;
+
+          // Renderizar botones de número de página
+          if (numerosPaginacion) {
+            numerosPaginacion.innerHTML = "";
+
+            for (let i = 1; i <= totalPaginas; i++) {
+              const btnNum = document.createElement("button");
+              btnNum.type = "button";
+              btnNum.className = `btn-num-pag ${i === paginaActual ? "activo" : ""}`;
+              btnNum.textContent = i.toString();
+              btnNum.setAttribute("aria-label", `Página ${i}`);
+
+              btnNum.onclick = () => {
+                if (i !== paginaActual) {
+                  paginaActual = i;
+                  filtrarDocumentos(true);
+                }
+              };
+
+              numerosPaginacion.appendChild(btnNum);
+            }
+          }
+        }
+      }
+
+      if (scrollArriba) {
+        const contenedor = document.getElementById("contenedor-catalogo-repositorio");
+        if (contenedor) {
+          contenedor.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
     };
+
+    // Listeners para botones Prev / Next de Paginación
+    if (btnPagPrev) {
+      btnPagPrev.onclick = () => {
+        if (paginaActual > 1) {
+          paginaActual--;
+          filtrarDocumentos(true);
+        }
+      };
+    }
+    if (btnPagNext) {
+      btnPagNext.onclick = () => {
+        const q = (input?.value || "").toLowerCase().trim();
+        const catSeleccionada = categoriaSeleccionada.toLowerCase().trim();
+        const totalCoincidentes = Array.from(items).filter((item) => {
+          const itemCat = (item.getAttribute("data-categoria") || "").toLowerCase().trim();
+          const texto = item.getAttribute("data-texto") || "";
+          return (catSeleccionada === "todas" || itemCat === catSeleccionada) && (!q || texto.includes(q));
+        }).length;
+        const totalPaginas = Math.ceil(totalCoincidentes / ITEMS_POR_PAGINA) || 1;
+
+        if (paginaActual < totalPaginas) {
+          paginaActual++;
+          filtrarDocumentos(true);
+        }
+      };
+    }
 
     const actualizarSugerencias = (termino: string) => {
       if (!panelSugerencias) return;
@@ -430,24 +610,22 @@ const listaCategorias = Array.from(gruposPorCategoria.keys()).sort((a, b) => {
         btn.onclick = () => {
           const val = btn.getAttribute("data-sugerencia") || "";
           const tipo = btn.getAttribute("data-tipo");
-          if (tipo === "categoria" && selectCategoria) {
-            selectCategoria.value = val.toLowerCase();
+          if (tipo === "categoria") {
+            seleccionarCategoria(val.toLowerCase());
           } else if (input) {
             input.value = val;
+            paginaActual = 1;
+            filtrarDocumentos();
           }
-          filtrarDocumentos();
           panelSugerencias.classList.add("hidden");
           panelSugerencias.classList.remove("flex");
         };
       });
     };
 
-    if (selectCategoria) {
-      selectCategoria.addEventListener("change", filtrarDocumentos);
-    }
-
     if (input) {
       input.addEventListener("input", () => {
+        paginaActual = 1;
         filtrarDocumentos();
         actualizarSugerencias(input.value);
       });
@@ -462,131 +640,38 @@ const listaCategorias = Array.from(gruposPorCategoria.keys()).sort((a, b) => {
     if (btnLimpiar && input) {
       btnLimpiar.onclick = () => {
         input.value = "";
-        if (selectCategoria) selectCategoria.value = "todas";
+        paginaActual = 1;
         filtrarDocumentos();
         actualizarSugerencias("");
         input.focus();
       };
     }
 
-    // Cerrar sugerencias al hacer click afuera
+    // Cerrar sugerencias al hacer click afuera o presionar Escape
     document.addEventListener("click", (e) => {
+      const target = e.target as Node;
       if (
         panelSugerencias &&
         input &&
-        !input.contains(e.target as Node) &&
-        !panelSugerencias.contains(e.target as Node)
+        !input.contains(target) &&
+        !panelSugerencias.contains(target)
       ) {
         panelSugerencias.classList.add("hidden");
         panelSugerencias.classList.remove("flex");
       }
     });
 
-    // 2. Identidad de usuario
-    let usuarioId = "";
-    let usuarioEmail = "";
-    try {
-      const sesionRaw = localStorage.getItem("observatorio_usuario_sesion");
-      if (sesionRaw) {
-        const sesion = JSON.parse(sesionRaw);
-        usuarioId = sesion.id || sesion.email || "";
-        usuarioEmail = sesion.email || "";
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (panelSugerencias) {
+          panelSugerencias.classList.add("hidden");
+          panelSugerencias.classList.remove("flex");
+        }
       }
-    } catch {
-      // Fallback
-    }
-
-    if (!usuarioId) {
-      usuarioId = localStorage.getItem("observatorio_dispositivo_id") || "";
-      if (!usuarioId) {
-        usuarioId = "anon_" + Math.random().toString(36).substring(2, 11);
-        localStorage.setItem("observatorio_dispositivo_id", usuarioId);
-      }
-    }
-
-    // 3. Estilos de botones de Like en Repositorio (solo botón sin contador)
-    const clasesBase = "btn-repo-like group/like relative grid h-10 w-10 place-items-center rounded-full transition-all duration-200 active:scale-95 cursor-pointer shrink-0";
-    const clasesInactivo = `${clasesBase} text-[#787774] bg-white/90 border border-black/[0.08] hover:text-[#0064c1] hover:bg-[#0064c1]/[0.08] shadow-[0_2px_8px_-2px_rgba(9,60,120,0.06)] backdrop-blur-md`;
-    const clasesActivo = `${clasesBase} text-white bg-[#0064c1] border border-[#0064c1] shadow-[0_4px_12px_-2px_rgba(0,100,193,0.4)]`;
-
-    const botonesLike = document.querySelectorAll<HTMLButtonElement>(".btn-repo-like");
-
-    botonesLike.forEach((btn) => {
-      const docId = btn.getAttribute("data-repo-like-btn");
-      if (!docId) return;
-
-      const storageKey = `reaccion_repo_${docId}`;
-
-      const actualizarVisual = (reaccion: string | null) => {
-        if (reaccion === "like") {
-          btn.className = clasesActivo;
-        } else {
-          btn.className = clasesInactivo;
-        }
-      };
-
-      const reaccionGuardada = localStorage.getItem(storageKey);
-      actualizarVisual(reaccionGuardada);
-
-      btn.onclick = async (e) => {
-        e.preventDefault();
-        const reaccionActual = localStorage.getItem(storageKey);
-        const nuevaReaccion = reaccionActual === "like" ? null : "like";
-
-        if (nuevaReaccion) {
-          localStorage.setItem(storageKey, nuevaReaccion);
-        } else {
-          localStorage.removeItem(storageKey);
-        }
-        actualizarVisual(nuevaReaccion);
-
-        try {
-          const res = await fetch("/api/reacciones", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              tipoContenido: "repositorio",
-              contenidoId: docId,
-              usuarioId,
-              usuarioEmail,
-              reaccion: nuevaReaccion,
-            }),
-          });
-
-          if (res.ok) {
-            const data = await res.json();
-            if (data.exito) {
-              actualizarVisual(data.reaccionActual);
-            }
-          }
-        } catch (error) {
-          console.error("Error al persistir reacción de repositorio:", error);
-        }
-      };
     });
 
-    // 4. Sincronizar estado remoto
-    if (usuarioId) {
-      fetch(`/api/reacciones?tipoContenido=repositorio&usuarioId=${encodeURIComponent(usuarioId)}`)
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (data && data.exito && Array.isArray(data.reacciones)) {
-            data.reacciones.forEach((item: { contenido_id: string; reaccion: string }) => {
-              const storageKey = `reaccion_repo_${item.contenido_id}`;
-              localStorage.setItem(storageKey, item.reaccion);
-              const boton = document.querySelector<HTMLButtonElement>(`[data-repo-like-btn="${item.contenido_id}"]`);
-              if (boton) {
-                if (item.reaccion === "like") {
-                  boton.className = clasesActivo;
-                } else {
-                  boton.className = clasesInactivo;
-                }
-              }
-            });
-          }
-        })
-        .catch(() => {});
-    }
+    // Ejecutar paginación inicial
+    filtrarDocumentos();
   }
 
   document.addEventListener("DOMContentLoaded", setupRepositorio);

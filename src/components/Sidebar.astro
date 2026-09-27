@@ -17,11 +17,15 @@ import {
   CloseSquareIcon,
   Logout2Icon,
 } from "@solar-icons/react/outline";
+import { ServicioRepositorio } from "../modules/repositorio/services/repositorio.service";
+import { ServicioContenidoFeed } from "../modules/contenido-feed/services/contenido-feed.service";
+import { ServicioInscripcionesRed } from "../modules/red-aprendizaje/services/inscripciones.service";
 
 interface SubItem {
   href: string;
   label: string;
   badge?: string;
+  badgeKey?: string;
   badgeType?: "count" | "new";
   icon?: any;
 }
@@ -31,6 +35,7 @@ interface Item {
   label: string;
   icon: any;
   badge?: string;
+  badgeKey?: string;
   badgeType?: "count" | "new";
   subItems?: SubItem[];
 }
@@ -41,11 +46,48 @@ interface Props {
 
 const { active = "Inicio" } = Astro.props;
 
+// Obtener datos reales de las colecciones de la base de datos
+const [documentos, feedItems, solicitudes] = await Promise.all([
+  ServicioRepositorio.obtenerDocumentos().catch(() => []),
+  ServicioContenidoFeed.obtenerItems().catch(() => []),
+  ServicioInscripcionesRed.obtenerSolicitudes().catch(() => []),
+]);
+
+const countRepositorio = documentos.length;
+const countNoticias = feedItems.filter(
+  (item) => item.tipo === "noticia" && item.estado === "Publicado"
+).length;
+const countYoutube = feedItems.filter(
+  (item) => item.tipo === "youtube" && item.estado === "Publicado"
+).length;
+const countFeedTotal = feedItems.length;
+const countSolicitudesPendientes = solicitudes.filter(
+  (s) => s.estado === "Pendiente"
+).length;
+
 const explorar: Item[] = [
   { href: "/dashboard", label: "Inicio", icon: HomeIcon },
-  { href: "/dashboard/repositorio", label: "Repositorio", icon: LibraryIcon, badge: "48" },
-  { href: "/dashboard/news", label: "News Feed", icon: NotesIcon, badge: "3" },
-  { href: "/dashboard/youtube", label: "Youtube Feed", icon: VideocameraIcon, badge: "1" },
+  {
+    href: "/dashboard/repositorio",
+    label: "Repositorio",
+    icon: LibraryIcon,
+    badge: String(countRepositorio),
+    badgeKey: "repositorio",
+  },
+  {
+    href: "/dashboard/news",
+    label: "News Feed",
+    icon: NotesIcon,
+    badge: String(countNoticias),
+    badgeKey: "news",
+  },
+  {
+    href: "/dashboard/youtube",
+    label: "Youtube Feed",
+    icon: VideocameraIcon,
+    badge: String(countYoutube),
+    badgeKey: "youtube",
+  },
 ];
 
 const administracion: Item[] = [
@@ -73,7 +115,8 @@ const administracion: Item[] = [
         href: "/dashboard/red-aprendizaje",
         label: "Usuarios Nuevos",
         icon: UserPlusIcon,
-        badge: "8",
+        badge: String(countSolicitudesPendientes),
+        badgeKey: "solicitudes",
         badgeType: "count",
       },
       {
@@ -92,7 +135,8 @@ const administracion: Item[] = [
     href: "/dashboard/contenido-feed",
     label: "Contenido Feed",
     icon: ChatSquareIcon,
-    badge: "4",
+    badge: String(countFeedTotal),
+    badgeKey: "feed",
     badgeType: "count",
   },
 ];
@@ -285,6 +329,7 @@ const administracion: Item[] = [
 
                 {item.badge && item.badgeType === "new" && (
                   <span
+                    data-sidebar-badge={item.badgeKey}
                     class="ml-auto mr-1.5 px-2 py-0.5 rounded-full text-white text-[0.66rem] font-semibold leading-tight shadow-sm shrink-0 whitespace-nowrap transition-all duration-200 lg:group-data-[collapsed=true]/sidebar:opacity-0 lg:group-data-[collapsed=true]/sidebar:w-0 lg:group-data-[collapsed=true]/sidebar:p-0 lg:group-data-[collapsed=true]/sidebar:overflow-hidden"
                     style="background-image: radial-gradient(120% 80% at 50% 0%, #ffffff42, #ffffff0a 36%, #ffffff00 54%), linear-gradient(#66b2ff, #4fa3ff 56%, #4a9ffb); box-shadow: inset 0 1px 1px rgba(255,255,255,0.5), 0 2px 8px -1px rgba(58,138,244,0.45); text-shadow: 0 1px 2px rgba(18,86,175,0.32)"
                   >
@@ -294,6 +339,7 @@ const administracion: Item[] = [
 
                 {item.badge && item.badgeType !== "new" && (
                   <span
+                    data-sidebar-badge={item.badgeKey}
                     class:list={[
                       "ml-auto mr-1.5 px-2 py-0.5 rounded-full text-[0.7rem] font-semibold leading-tight font-mono shrink-0 whitespace-nowrap transition-all duration-200 lg:group-data-[collapsed=true]/sidebar:opacity-0 lg:group-data-[collapsed=true]/sidebar:w-0 lg:group-data-[collapsed=true]/sidebar:p-0 lg:group-data-[collapsed=true]/sidebar:overflow-hidden",
                       esActivo
@@ -400,6 +446,7 @@ const administracion: Item[] = [
 
                             {sub.badge && (
                               <span
+                                data-sidebar-badge={sub.badgeKey}
                                 class:list={[
                                   "ml-auto px-2 py-0.5 rounded-full text-[0.68rem] font-bold font-mono shrink-0 transition-colors",
                                   esSubActivo
@@ -453,6 +500,7 @@ const administracion: Item[] = [
 
                 {item.badge && item.badgeType === "new" && (
                   <span
+                    data-sidebar-badge={item.badgeKey}
                     class="ml-auto mr-1.5 px-2 py-0.5 rounded-full text-white text-[0.66rem] font-semibold leading-tight shadow-sm shrink-0 whitespace-nowrap transition-all duration-200 lg:group-data-[collapsed=true]/sidebar:opacity-0 lg:group-data-[collapsed=true]/sidebar:w-0 lg:group-data-[collapsed=true]/sidebar:p-0 lg:group-data-[collapsed=true]/sidebar:overflow-hidden"
                     style="background-image: radial-gradient(120% 80% at 50% 0%, #ffffff42, #ffffff0a 36%, #ffffff00 54%), linear-gradient(#66b2ff, #4fa3ff 56%, #4a9ffb); box-shadow: inset 0 1px 1px rgba(255,255,255,0.5), 0 2px 8px -1px rgba(58,138,244,0.45); text-shadow: 0 1px 2px rgba(18,86,175,0.32)"
                   >
@@ -462,6 +510,7 @@ const administracion: Item[] = [
 
                 {item.badge && item.badgeType !== "new" && (
                   <span
+                    data-sidebar-badge={item.badgeKey}
                     class:list={[
                       "ml-auto mr-1.5 px-2 py-0.5 rounded-full text-[0.7rem] font-semibold leading-tight font-mono shrink-0 whitespace-nowrap transition-all duration-200 lg:group-data-[collapsed=true]/sidebar:opacity-0 lg:group-data-[collapsed=true]/sidebar:w-0 lg:group-data-[collapsed=true]/sidebar:p-0 lg:group-data-[collapsed=true]/sidebar:overflow-hidden",
                       esActivo
@@ -483,13 +532,13 @@ const administracion: Item[] = [
   <!-- Tarjeta de Usuario Institucional y Botón de Logout debajo -->
   <div class="flex flex-col gap-2 shrink-0 pt-2 border-t border-black/[0.05]">
     <div
-      class="flex items-center gap-2 rounded-[20px] border border-white/80 bg-white/90 p-1.5 shadow-[0_10px_25px_-8px_rgba(9,60,120,0.15)] transition-all duration-300 hover:shadow-[0_14px_30px_-6px_rgba(9,60,120,0.22)] overflow-hidden"
+      class="flex items-center gap-2 rounded-[20px] p-1.5 transition-all duration-200 overflow-hidden"
     >
       <div class="grid h-10 w-10 shrink-0 place-items-center">
         <span
           id="sidebar-user-avatar"
-          class="grid h-9 w-9 place-items-center rounded-2xl text-white text-xs font-bold shadow-sm"
-          style="background-image: radial-gradient(120% 80% at 50% 0%, #ffffff42, #ffffff0a 36%, #ffffff00 54%), linear-gradient(#66b2ff, #4fa3ff 56%, #4a9ffb); box-shadow: inset 0 1.5px 1px rgba(255,255,255,0.5), inset 0 9px 16px -10px rgba(255,255,255,0.3), inset 0 -14px 22px -10px rgba(26,106,202,0.5), 0 4px 14px -3px rgba(58,138,244,0.4); text-shadow: 0 1px 2px rgba(18,86,175,0.32)"
+          class="grid h-9 w-9 place-items-center rounded-2xl text-white text-xs font-bold"
+          style="background-image: radial-gradient(120% 80% at 50% 0%, #ffffff42, #ffffff0a 36%, #ffffff00 54%), linear-gradient(#66b2ff, #4fa3ff 56%, #4a9ffb); box-shadow: inset 0 1.5px 1px rgba(255,255,255,0.5), inset 0 9px 16px -10px rgba(255,255,255,0.3), inset 0 -14px 22px -10px rgba(26,106,202,0.5);"
           aria-hidden="true"
         >
           UI
@@ -791,6 +840,25 @@ const administracion: Item[] = [
       btnMobileLogout.setAttribute("data-logout-init", "true");
       btnMobileLogout.addEventListener("click", ejecutarLogout);
     }
+
+    // Sincronizar conteos reales de contenido en el sidebar
+    const actualizarConteosSidebar = async () => {
+      try {
+        const res = await fetch("/api/sidebar/counts");
+        if (res.ok) {
+          const conteos = await res.json();
+          const badgeEls = document.querySelectorAll("[data-sidebar-badge]");
+          badgeEls.forEach((el) => {
+            const key = el.getAttribute("data-sidebar-badge");
+            if (key && conteos[key] !== undefined) {
+              el.textContent = String(conteos[key]);
+            }
+          });
+        }
+      } catch {}
+    };
+
+    actualizarConteosSidebar();
   }
 
   setupSidebar();

@@ -97,12 +97,15 @@ export const POST: APIRoute = async ({ request }) => {
           `or=(email.eq.${encodeURIComponent(solicitud.email)},cedula.eq.${encodeURIComponent(solicitud.cedula)})&select=id`
         );
 
+        const rolAsignado = solicitud.semestre === "Graduado" ? "Graduado" : "Estudiante";
+
         if (existentes && existentes.length > 0) {
           // Actualizar estado a Activo
           await clienteSupabase.actualizar(TABLA_ESTUDIANTES, existentes[0].id, {
             solicitud_id: solicitud.id,
             estado: "Activo",
             password_hash: passwordHash,
+            rol: rolAsignado,
           });
         } else {
           // Crear nuevo estudiante
@@ -111,13 +114,13 @@ export const POST: APIRoute = async ({ request }) => {
             nombre: solicitud.nombre,
             email: solicitud.email,
             cedula: solicitud.cedula,
-            telefono: solicitud.telefono,
-            fecha_nacimiento: solicitud.fecha_nacimiento,
+            telefono: solicitud.telefono || "",
+            fecha_nacimiento: solicitud.fecha_nacimiento || "",
             universidad: solicitud.universidad,
             carrera: solicitud.carrera,
             semestre: solicitud.semestre,
             password_hash: passwordHash,
-            rol: "Estudiante",
+            rol: rolAsignado,
             estado: "Activo",
           });
         }

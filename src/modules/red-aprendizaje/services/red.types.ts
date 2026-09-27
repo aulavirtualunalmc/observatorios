@@ -1,14 +1,16 @@
 export interface DatosRegistroRed {
-  nombre: string;
+  nombre?: string;
+  nombres?: string;
+  apellidos?: string;
   email: string;
   cedula: string;
-  telefono: string;
-  dia: number;
-  mes: string;
-  anio: number;
+  rangoEdad: string;
+  condicionAcademica: string;
   universidad: string;
-  semestre: string;
   carrera: string;
+  semestre?: string;
+  telefono?: string;
+  aceptaTratamientoDatos: boolean;
 }
 
 export interface RegistroRedNuevo {
@@ -30,3 +32,4 @@ export interface RespuestaRegistroRed {
   mensaje?: string;
   registro?: RegistroRedNuevo;
 }
+

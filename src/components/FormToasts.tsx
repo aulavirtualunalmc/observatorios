@@ -202,28 +202,39 @@ export default function FormToasts({
 
           toast.success(tituloNotificacion, { description: descripcionNotificacion });
         } else if (formId === "form-register") {
-          const nombre = String(formData.get("nombre") || "");
-          const email = String(formData.get("email") || "");
-          const cedula = String(formData.get("cedula") || "");
-          const telefono = String(formData.get("telefono") || "");
-          const dia = Number(formData.get("dia") || 0);
-          const mes = String(formData.get("mes") || "");
-          const anio = Number(formData.get("anio") || 0);
-          const universidad = String(formData.get("universidad") || "");
-          const semestre = String(formData.get("semestre") || "");
-          const carrera = String(formData.get("carrera") || "");
+          const nombres = String(formData.get("nombres") || "").trim();
+          const apellidos = String(formData.get("apellidos") || "").trim();
+          const nombre = String(formData.get("nombre") || `${nombres} ${apellidos}`).trim();
+          const email = String(formData.get("email") || "").trim();
+          const cedula = String(formData.get("cedula") || "").trim();
+          const rangoEdad = String(formData.get("rangoEdad") || "").trim();
+          const condicionAcademica = String(formData.get("condicionAcademica") || "").trim();
+          const universidad = String(formData.get("universidad") || "").trim();
+          const semestre = String(formData.get("semestre") || "").trim();
+          const carrera = String(formData.get("carrera") || "").trim();
+          const checkboxElement = form.querySelector<HTMLInputElement>('input[name="aceptaTratamientoDatos"]');
+          const aceptaTratamientoDatos = checkboxElement ? checkboxElement.checked : false;
+
+          if (!aceptaTratamientoDatos) {
+            toast.danger("Autorización requerida", {
+              description: "Debes autorizar el tratamiento de datos personales para unirte a la red.",
+            });
+            restaurarFormulario();
+            return;
+          }
 
           const respuesta = await ServicioRedAprendizaje.registrarParticipante({
+            nombres,
+            apellidos,
             nombre,
             email,
             cedula,
-            telefono,
-            dia,
-            mes,
-            anio,
+            rangoEdad,
+            condicionAcademica,
             universidad,
             semestre,
             carrera,
+            aceptaTratamientoDatos,
           });
 
           if (!respuesta.exito) {

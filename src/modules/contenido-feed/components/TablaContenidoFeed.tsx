@@ -17,8 +17,6 @@ import {
   AddCircleIcon,
   RefreshIcon,
   InboxIcon,
-  StarsMinimalisticIcon,
-  LikeIcon,
 } from "@solar-icons/react/outline";
 import type { ItemFeedAdmin, TipoFeed } from "../services/contenido-feed.types";
 
@@ -40,66 +38,6 @@ export const TablaContenidoFeed: React.FC<Props> = ({ items: itemsIniciales = []
   const [itemAEliminar, setItemAEliminar] = useState<ItemFeedAdmin | null>(null);
   const [modalMasivoEliminar, setModalMasivoEliminar] = useState(false);
   const [eliminando, setEliminando] = useState(false);
-  const [actualizandoDestacadoId, setActualizandoDestacadoId] = useState<string | null>(null);
-
-  // Alternar Destacado exclusivo por tipo
-  const toggleDestacado = async (item: ItemFeedAdmin) => {
-    const nuevoDestacado = !item.destacado;
-    const itemTipo = item.tipo;
-    const listaAnterior = [...lista];
-
-    // Actualización optimista: solo 1 destacado por tipo
-    setLista((prev) =>
-      prev.map((i) => {
-        if (i.id === item.id) {
-          return { ...i, destacado: nuevoDestacado };
-        }
-        if (nuevoDestacado && i.tipo === itemTipo) {
-          return { ...i, destacado: false };
-        }
-        return i;
-      })
-    );
-
-    setActualizandoDestacadoId(item.id);
-
-    try {
-      const resp = await fetch("/api/contenido-feed/destacar", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: item.id,
-          tipo: item.tipo,
-          destacado: nuevoDestacado,
-        }),
-      });
-
-      if (!resp.ok) {
-        const errData = await resp.json().catch(() => ({}));
-        throw new Error(errData.error || "No se pudo actualizar el estado de destacado.");
-      }
-
-      if (nuevoDestacado) {
-        toast.success("Contenido Destacado", {
-          description: `"${item.titulo}" es ahora el contenido destacado de ${item.tipo === "noticia" ? "Noticias" : "YouTube"}.`,
-        });
-      } else {
-        toast.info("Destacado removido", {
-          description: `"${item.titulo}" ya no está marcado como destacado.`,
-        });
-      }
-    } catch (err: any) {
-      // Revertir optimismo
-      setLista(listaAnterior);
-      toast.danger("Error al cambiar destacado", {
-        description: err.message || "Ocurrió un problema de conexión.",
-      });
-    } finally {
-      setActualizandoDestacadoId(null);
-    }
-  };
 
   // Recargar datos desde la API
   const recargarDatos = async () => {
@@ -389,18 +327,6 @@ export const TablaContenidoFeed: React.FC<Props> = ({ items: itemsIniciales = []
                   Enlace Original
                 </Table.Column>
 
-                <Table.Column className="py-4 px-4 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[#0064c1] text-center">
-                  Estado
-                </Table.Column>
-
-                <Table.Column className="py-4 px-4 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-amber-600 text-center">
-                  Destacado
-                </Table.Column>
-
-                <Table.Column className="py-4 px-4 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[#0064c1] text-center">
-                  Likes
-                </Table.Column>
-
                 <Table.Column className="py-4 px-5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[#0064c1] text-right">
                   Acciones
                 </Table.Column>
@@ -409,7 +335,7 @@ export const TablaContenidoFeed: React.FC<Props> = ({ items: itemsIniciales = []
               <Table.Body>
                 {itemsPaginados.length === 0 ? (
                   <Table.Row id="fila-vacia">
-                    <Table.Cell className="py-16 text-center" colSpan={8}>
+                    <Table.Cell className="py-16 text-center" colSpan={5}>
                       <div className="flex flex-col items-center justify-center gap-3 max-w-sm mx-auto">
                         <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[#0064c1]/10 text-[#0064c1]">
                           <InboxIcon size={28} strokeWidth={1.5} />
@@ -469,17 +395,9 @@ export const TablaContenidoFeed: React.FC<Props> = ({ items: itemsIniciales = []
                             </div>
                           )}
                           <div className="flex flex-col gap-0.5 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-bold text-[#0a0a0a] group-hover/row:text-[#0064c1] transition-colors line-clamp-2 leading-tight">
-                                {item.titulo}
-                              </span>
-                              {item.destacado && (
-                                <span className="inline-flex items-center gap-0.5 text-[0.62rem] font-bold uppercase tracking-wider text-amber-800 bg-amber-500/20 px-1.5 py-0.5 rounded-md shrink-0 border border-amber-500/30">
-                                  <StarsMinimalisticIcon size={10} strokeWidth={2.5} className="text-amber-600" />
-                                  Top
-                                </span>
-                              )}
-                            </div>
+                            <span className="font-bold text-[#0a0a0a] group-hover/row:text-[#0064c1] transition-colors line-clamp-2 leading-tight">
+                              {item.titulo}
+                            </span>
                             <span className="text-[0.7rem] text-[#787774] line-clamp-1">
                               {item.descripcion}
                             </span>
@@ -511,63 +429,6 @@ export const TablaContenidoFeed: React.FC<Props> = ({ items: itemsIniciales = []
                           <LinkRoundIcon size={14} className="shrink-0" />
                           <span className="truncate">{item.enlace}</span>
                         </a>
-                      </Table.Cell>
-
-                      {/* Estado */}
-                      <Table.Cell className="py-4 px-4 text-center">
-                        <span
-                          className={`inline-flex items-center gap-1 text-[0.7rem] font-bold px-2.5 py-1 rounded-full ${
-                            item.estado === "Publicado"
-                              ? "bg-emerald-500/10 text-emerald-700 border border-emerald-500/20"
-                              : "bg-black/[0.06] text-[#787774] border border-black/[0.08]"
-                          }`}
-                        >
-                          <span
-                            className={`h-1.5 w-1.5 rounded-full ${
-                              item.estado === "Publicado" ? "bg-emerald-500" : "bg-zinc-400"
-                            }`}
-                          />
-                          {item.estado}
-                        </span>
-                      </Table.Cell>
-
-                      {/* Destacado Exclusivo */}
-                      <Table.Cell className="py-4 px-4 text-center">
-                        <button
-                          type="button"
-                          disabled={actualizandoDestacadoId === item.id}
-                          onClick={() => toggleDestacado(item)}
-                          title={
-                            item.destacado
-                              ? "Destacado activo. Haz clic para desmarcar."
-                              : `Haz clic para marcar como el único destacado de ${item.tipo === "noticia" ? "Noticias" : "YouTube"}.`
-                          }
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${
-                            item.destacado
-                              ? "bg-amber-500/15 text-amber-800 border border-amber-500/35 shadow-[0_2px_10px_-2px_rgba(245,158,11,0.35)]"
-                              : "bg-black/[0.03] text-[#787774] border border-black/[0.08] hover:text-amber-800 hover:border-amber-500/30 hover:bg-amber-500/10"
-                          } ${actualizandoDestacadoId === item.id ? "opacity-50 pointer-events-none" : ""}`}
-                        >
-                          {item.destacado ? (
-                            <StarsMinimalisticIcon size={14} strokeWidth={2.5} className="text-amber-500 animate-pulse" />
-                          ) : (
-                            <StarsMinimalisticIcon size={14} className="text-[#787774]" />
-                          )}
-                          <span>{item.destacado ? "Destacado" : "Normal"}</span>
-                        </button>
-                      </Table.Cell>
-
-                      {/* Likes Acumulados */}
-                      <Table.Cell className="py-4 px-4 text-center">
-                        <span
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#0064c1]/[0.06] border border-[#0064c1]/15 text-[#0064c1]"
-                          title={`${item.likesCount || 0} me gusta acumulados`}
-                        >
-                          <LikeIcon size={14} strokeWidth={1.8} />
-                          <span className="font-mono text-xs font-bold select-none">
-                            {item.likesCount || 0}
-                          </span>
-                        </span>
                       </Table.Cell>
 
                       {/* Acciones */}

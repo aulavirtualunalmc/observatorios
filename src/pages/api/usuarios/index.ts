@@ -38,36 +38,53 @@ export const GET: APIRoute = async () => {
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
-    const {
-      nombre,
-      email,
-      cedula,
-      telefono,
-      fechaNacimiento,
-      universidad,
-      carrera,
-      semestre,
-      estado,
-      password,
-    } = body;
+    const nombres = (body.nombres || "").trim();
+    const apellidos = (body.apellidos || "").trim();
+    const nombre = (body.nombre || `${nombres} ${apellidos}`).trim();
+    const email = (body.email || "").trim().toLowerCase();
+    const cedula = (body.cedula || "").trim();
+    const telefono = (body.telefono || "").trim();
+    const fechaNacimiento = (
+      body.rangoEdad ||
+      body.rango_edad ||
+      body.fechaNacimiento ||
+      body.fecha_nacimiento ||
+      ""
+    ).trim();
+    const condicionAcademica = (
+      body.condicionAcademica ||
+      body.condicion_academica ||
+      ""
+    ).trim();
+    const universidad = (body.universidad || "").trim();
+    const carrera = (body.carrera || "").trim();
+    const semestreBruto = (body.semestre || "").trim();
+    const semestre =
+      condicionAcademica === "Graduado" && (!semestreBruto || semestreBruto === "No aplica")
+        ? "Graduado"
+        : (semestreBruto || "No aplica");
+    const estado = body.estado || "Activo";
+    const password = body.password;
+    const rolAsignado =
+      condicionAcademica === "Graduado" || semestre === "Graduado" ? "Graduado" : "Estudiante";
 
-    if (!nombre || !nombre.trim()) {
+    if (!nombre) {
       return new Response(
         JSON.stringify({ error: "El nombre es obligatorio." }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    if (!email || !email.trim() || !email.includes("@")) {
+    if (!email || !email.includes("@")) {
       return new Response(
         JSON.stringify({ error: "El correo electrónico no es válido." }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    if (!cedula || !cedula.trim()) {
+    if (!cedula) {
       return new Response(
-        JSON.stringify({ error: "La cédula es obligatoria." }),
+        JSON.stringify({ error: "El número de identificación (cédula) es obligatorio." }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -75,33 +92,33 @@ export const POST: APIRoute = async ({ request }) => {
     // Verificar si ya existe un estudiante con esa cédula o correo
     const existentes = await clienteSupabase.consultar<any>(
       TABLA,
-      `or=(email.eq.${encodeURIComponent(email.trim().toLowerCase())},cedula.eq.${encodeURIComponent(cedula.trim())})&select=id`
+      `or=(email.eq.${encodeURIComponent(email)},cedula.eq.${encodeURIComponent(cedula)})&select=id`
     );
 
     if (existentes && existentes.length > 0) {
       return new Response(
-        JSON.stringify({ error: "Ya existe un estudiante registrado con este correo o cédula." }),
+        JSON.stringify({ error: "Ya existe un usuario registrado con este correo o número de identificación." }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
     // Generar hash de contraseña (la contraseña inicial es la cédula si no se especifica otra)
-    const claveAHashear = password && password.trim() ? password.trim() : cedula.trim();
+    const claveAHashear = password && password.trim() ? password.trim() : cedula;
     const salt = bcrypt.genSaltSync(10);
     const passwordHash = bcrypt.hashSync(claveAHashear, salt);
 
     const payload = {
-      nombre: nombre.trim(),
-      email: email.trim().toLowerCase(),
-      cedula: cedula.trim(),
-      telefono: telefono ? telefono.trim() : "",
-      fecha_nacimiento: fechaNacimiento || "",
-      universidad: universidad ? universidad.trim() : "",
-      carrera: carrera ? carrera.trim() : "",
-      semestre: semestre ? semestre.trim() : "",
+      nombre,
+      email,
+      cedula,
+      telefono,
+      fecha_nacimiento: fechaNacimiento,
+      universidad,
+      carrera,
+      semestre,
       password_hash: passwordHash,
-      rol: "Estudiante",
-      estado: estado || "Activo",
+      rol: rolAsignado,
+      estado,
     };
 
     const usuarioCreado = await clienteSupabase.insertar(TABLA, payload);

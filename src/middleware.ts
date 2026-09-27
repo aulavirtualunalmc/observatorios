@@ -10,6 +10,7 @@ import {
 const RUTAS_PUBLICAS = [
   "/",
   "/red",
+  "/privacidad",
   "/api/auth/login",
   "/api/auth/logout",
   "/api/red-aprendizaje/registro",

@@ -61,10 +61,14 @@ export const PUT: APIRoute = async ({ params, request }) => {
     const body = await request.json();
     const {
       nombre,
+      nombres,
+      apellidos,
       email,
       cedula,
       telefono,
       fechaNacimiento,
+      rangoEdad,
+      condicionAcademica,
       universidad,
       carrera,
       semestre,
@@ -74,14 +78,25 @@ export const PUT: APIRoute = async ({ params, request }) => {
 
     const payload: Record<string, any> = {};
 
-    if (nombre !== undefined) payload.nombre = nombre.trim();
+    const nombreCompleto = nombre || (nombres || apellidos ? `${nombres || ""} ${apellidos || ""}`.trim() : undefined);
+    if (nombreCompleto !== undefined) payload.nombre = nombreCompleto.trim();
     if (email !== undefined) payload.email = email.trim().toLowerCase();
     if (cedula !== undefined) payload.cedula = cedula.trim();
     if (telefono !== undefined) payload.telefono = telefono.trim();
-    if (fechaNacimiento !== undefined) payload.fecha_nacimiento = fechaNacimiento;
+    
+    const fecha = rangoEdad || fechaNacimiento;
+    if (fecha !== undefined) payload.fecha_nacimiento = fecha;
+    
     if (universidad !== undefined) payload.universidad = universidad.trim();
     if (carrera !== undefined) payload.carrera = carrera.trim();
-    if (semestre !== undefined) payload.semestre = semestre.trim();
+    
+    if (condicionAcademica === "Graduado" && (!semestre || semestre === "No aplica")) {
+      payload.semestre = "Graduado";
+      payload.rol = "Graduado";
+    } else if (semestre !== undefined) {
+      payload.semestre = semestre.trim();
+    }
+    
     if (estado !== undefined) payload.estado = estado;
 
     if (password && password.trim().length >= 4) {

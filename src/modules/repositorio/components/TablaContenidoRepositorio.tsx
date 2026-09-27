@@ -18,9 +18,10 @@ import {
   BookBookmarkIcon,
   GlobeIcon,
   LinkRoundIcon,
-  LikeIcon,
+  UploadTrackIcon,
 } from "@solar-icons/react/outline";
 import type { DocumentoRepositorio } from "../services/repositorio.types";
+import { ModalCargaExcelRepositorio } from "./ModalCargaExcelRepositorio";
 
 interface Props {
   documentosIniciales?: DocumentoRepositorio[];
@@ -37,6 +38,9 @@ export const TablaContenidoRepositorio: React.FC<Props> = ({ documentosIniciales
   const [filtroTipo, setFiltroTipo] = useState("todos");
   const [pagina, setPagina] = useState(1);
   const [cargando, setCargando] = useState(false);
+
+  // Estado del modal de carga por Excel
+  const [modalExcelAbierto, setModalExcelAbierto] = useState(false);
 
   // Estados de eliminación
   const [itemAEliminar, setItemAEliminar] = useState<DocumentoRepositorio | null>(null);
@@ -312,6 +316,16 @@ export const TablaContenidoRepositorio: React.FC<Props> = ({ documentosIniciales
             </div>
           )}
 
+          {/* Botón Carga de datos por Excel */}
+          <button
+            type="button"
+            onClick={() => setModalExcelAbierto(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-white/90 hover:bg-white text-[#0064c1] border border-[#0064c1]/25 hover:border-[#0064c1]/50 text-xs font-semibold tracking-[-0.01em] cursor-pointer transition-all duration-200 active:scale-95 shadow-[0_2px_8px_-2px_rgba(0,100,193,0.15)]"
+          >
+            <UploadTrackIcon size={16} strokeWidth={2} className="text-[#0064c1]" />
+            <span>Carga de datos por Excel</span>
+          </button>
+
           {/* Botón Cargar Nuevo Documento */}
           <a
             href="/dashboard/contenido-repositorio/nuevo"
@@ -367,10 +381,6 @@ export const TablaContenidoRepositorio: React.FC<Props> = ({ documentosIniciales
                   Tipo / País / Año
                 </Table.Column>
 
-                <Table.Column className="py-4 px-4 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[#0064c1] text-center">
-                  Likes
-                </Table.Column>
-
                 <Table.Column className="py-4 px-5 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[#0064c1] text-right">
                   Acciones
                 </Table.Column>
@@ -379,7 +389,7 @@ export const TablaContenidoRepositorio: React.FC<Props> = ({ documentosIniciales
               <Table.Body>
                 {documentosPaginados.length === 0 ? (
                   <Table.Row id="fila-vacia-repositorio">
-                    <Table.Cell className="py-16 text-center" colSpan={7}>
+                    <Table.Cell className="py-16 text-center" colSpan={6}>
                       <div className="flex flex-col items-center justify-center gap-3 max-w-sm mx-auto">
                         <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[#0064c1]/10 text-[#0064c1]">
                           <InboxIcon size={28} strokeWidth={1.5} />
@@ -508,19 +518,6 @@ export const TablaContenidoRepositorio: React.FC<Props> = ({ documentosIniciales
                             {item.pais}
                           </span>
                         </div>
-                      </Table.Cell>
-
-                      {/* Likes Acumulados */}
-                      <Table.Cell className="py-4 px-4 text-center">
-                        <span
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#0064c1]/[0.06] border border-[#0064c1]/15 text-[#0064c1]"
-                          title={`${item.likesCount || 0} me gusta acumulados`}
-                        >
-                          <LikeIcon size={14} strokeWidth={1.8} />
-                          <span className="font-mono text-xs font-bold select-none">
-                            {item.likesCount || 0}
-                          </span>
-                        </span>
                       </Table.Cell>
 
                       {/* Acciones */}
@@ -720,6 +717,13 @@ export const TablaContenidoRepositorio: React.FC<Props> = ({ documentosIniciales
           </div>,
           document.body
         )}
+
+      {/* Modal de Carga Masiva por Excel */}
+      <ModalCargaExcelRepositorio
+        abierto={modalExcelAbierto}
+        alCerrar={() => setModalExcelAbierto(false)}
+        alCompletar={recargarDatos}
+      />
     </div>
   );
 };

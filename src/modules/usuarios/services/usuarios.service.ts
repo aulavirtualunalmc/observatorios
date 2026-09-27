@@ -18,19 +18,34 @@ export class ServicioUsuarios {
       );
 
       if (registros && registros.length > 0) {
-        return registros.map((item) => ({
-          id: item.id,
-          nombre: item.nombre || "Sin nombre",
-          email: item.email || "",
-          cedula: item.cedula || "",
-          telefono: item.telefono || "",
-          fechaNacimiento: item.fecha_nacimiento || "",
-          universidad: item.universidad || "Sin universidad",
-          carrera: item.carrera || "Sin carrera",
-          semestre: item.semestre ? `${item.semestre}° Semestre` : "No especificado",
-          fechaRegistro: item.created_at ? item.created_at.split("T")[0] : "Reciente",
-          estado: (item.estado as any) || "Activo",
-        }));
+        return registros.map((item) => {
+          const semestreValor = item.semestre || "";
+          let semestreFormateado = "No especificado";
+          if (semestreValor) {
+            if (semestreValor.includes("Semestre") || semestreValor === "Graduado" || semestreValor === "No aplica") {
+              semestreFormateado = semestreValor;
+            } else {
+              semestreFormateado = `${semestreValor}° Semestre`;
+            }
+          }
+
+          return {
+            id: item.id,
+            nombre: item.nombre || "Sin nombre",
+            email: item.email || "",
+            cedula: item.cedula || "",
+            telefono: item.telefono || undefined,
+            rangoEdad: item.rango_edad || item.fecha_nacimiento || undefined,
+            condicionAcademica: item.condicion_academica || (semestreValor === "Graduado" ? "Graduado" : "Estudiante"),
+            fechaNacimiento: item.fecha_nacimiento || item.rango_edad || "",
+            universidad: item.universidad || "Sin universidad",
+            carrera: item.carrera || "Sin carrera",
+            semestre: semestreFormateado,
+            fechaRegistro: item.created_at ? item.created_at.split("T")[0] : "Reciente",
+            ultimoIngreso: item.ultimo_ingreso || item.last_sign_in_at || (item.updated_at ? item.updated_at.split("T")[0] : (item.created_at ? item.created_at.split("T")[0] : "Sin registro")),
+            estado: (item.estado as any) || "Activo",
+          };
+        });
       }
 
       return [];
@@ -52,17 +67,30 @@ export class ServicioUsuarios {
 
       if (registros && registros.length > 0) {
         const item = registros[0];
+        const semestreValor = item.semestre || "";
+        let semestreFormateado = "No especificado";
+        if (semestreValor) {
+          if (semestreValor.includes("Semestre") || semestreValor === "Graduado" || semestreValor === "No aplica") {
+            semestreFormateado = semestreValor;
+          } else {
+            semestreFormateado = `${semestreValor}° Semestre`;
+          }
+        }
+
         return {
           id: item.id,
           nombre: item.nombre || "Sin nombre",
           email: item.email || "",
           cedula: item.cedula || "",
-          telefono: item.telefono || "",
-          fechaNacimiento: item.fecha_nacimiento || "",
+          telefono: item.telefono || undefined,
+          rangoEdad: item.rango_edad || item.fecha_nacimiento || undefined,
+          condicionAcademica: item.condicion_academica || (semestreValor === "Graduado" ? "Graduado" : "Estudiante"),
+          fechaNacimiento: item.fecha_nacimiento || item.rango_edad || "",
           universidad: item.universidad || "Sin universidad",
           carrera: item.carrera || "Sin carrera",
-          semestre: item.semestre || "",
+          semestre: semestreFormateado,
           fechaRegistro: item.created_at ? item.created_at.split("T")[0] : "Reciente",
+          ultimoIngreso: item.ultimo_ingreso || item.last_sign_in_at || (item.updated_at ? item.updated_at.split("T")[0] : (item.created_at ? item.created_at.split("T")[0] : "Sin registro")),
           estado: (item.estado as any) || "Activo",
         };
       }

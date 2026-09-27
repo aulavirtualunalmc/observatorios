@@ -1,10 +1,14 @@
 export interface SolicitudInscripcionRed {
   id: string;
   nombre: string;
+  nombres?: string;
+  apellidos?: string;
   email?: string;
   cedula: string;
-  telefono: string;
-  fechaNacimiento: string;
+  telefono?: string;
+  fechaNacimiento?: string;
+  rangoEdad?: string;
+  condicionAcademica?: string;
   universidad: string;
   carrera: string;
   semestre: string;
@@ -18,4 +22,5 @@ export interface ConfiguracionConvocatoria {
   mensajeCierre: string;
   updatedAt?: string;
 }
+
 

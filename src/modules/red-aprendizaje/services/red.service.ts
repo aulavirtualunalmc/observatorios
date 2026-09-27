@@ -12,17 +12,21 @@ export class ServicioRedAprendizaje {
     datos: DatosRegistroRed
   ): Promise<RespuestaRegistroRed> {
     try {
+      if (!datos.aceptaTratamientoDatos) {
+        return {
+          exito: false,
+          mensaje: "Debes autorizar el tratamiento de datos personales para continuar.",
+        };
+      }
+
       if (
-        !datos.nombre ||
+        (!datos.nombre && (!datos.nombres || !datos.apellidos)) ||
         !datos.email ||
         !datos.cedula ||
-        !datos.telefono ||
+        !datos.rangoEdad ||
+        !datos.condicionAcademica ||
         !datos.universidad ||
-        !datos.carrera ||
-        !datos.semestre ||
-        !datos.dia ||
-        !datos.mes ||
-        !datos.anio
+        !datos.carrera
       ) {
         return {
           exito: false,

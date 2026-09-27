@@ -149,6 +149,44 @@ export class ServicioRepositorio {
   }
 
   /**
+   * Crea un lote masivo de documentos en el repositorio en bloques para máxima velocidad
+   */
+  static async crearDocumentosMasivo(
+    documentos: Omit<DocumentoRepositorio, "id" | "createdAt">[]
+  ): Promise<{ creados: number; total: number }> {
+    if (documentos.length === 0) return { creados: 0, total: 0 };
+
+    const registrosParaInsertar = documentos.map((datos) => ({
+      ano: String(datos.ano || "").trim(),
+      linea_investigacion: String(datos.lineaInvestigacion || "General").trim(),
+      titulo: String(datos.titulo || "").trim(),
+      tipo_fuente: String(datos.tipoFuente || "Artículo científico").trim(),
+      pais: String(datos.pais || "Internacional").trim(),
+      categoria: datos.categoria ? String(datos.categoria).trim() : null,
+      autores: Array.isArray(datos.autores) ? datos.autores : [],
+      enlace_documento: this.serializarEnlaces(datos.paginasWeb, datos.enlaceDocumento),
+      resumen: datos.resumen ? String(datos.resumen).trim() : null,
+      referencia_apa: datos.referenciaApa ? String(datos.referenciaApa).trim() : null,
+      paginas: datos.paginas || null,
+    }));
+
+    // Insertar en bloques de 100 para evitar límites de payload pero con velocidad instantánea
+    const TAMANO_LOTE = 100;
+    let creados = 0;
+
+    for (let i = 0; i < registrosParaInsertar.length; i += TAMANO_LOTE) {
+      const lote = registrosParaInsertar.slice(i, i + TAMANO_LOTE);
+      const resultado = await clienteSupabase.insertarMasivo<RegistroDocumentoSupabase>(
+        "documentos_repositorio",
+        lote
+      );
+      creados += resultado.length;
+    }
+
+    return { creados, total: documentos.length };
+  }
+
+  /**
    * Actualiza un documento del repositorio existente
    */
   static async actualizarDocumento(

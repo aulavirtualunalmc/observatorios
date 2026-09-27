@@ -18,6 +18,7 @@ interface Props {
   max?: string | number;
   required?: boolean;
   icon?: any;
+  class?: string;
 }
 
 
@@ -33,12 +34,13 @@ const {
   max,
   required = false,
   icon: Icon,
+  class: className,
 } = Astro.props;
 
 const esContrasena = type === "password";
 ---
 
-<div class="group/field flex flex-col gap-2" data-password-field={esContrasena ? "true" : undefined}>
+<div class:list={["group/field flex flex-col justify-between gap-2 h-full", className]} data-password-field={esContrasena ? "true" : undefined}>
   {
     (label || Icon) && (
       <label for={name} class={fieldLabel}>

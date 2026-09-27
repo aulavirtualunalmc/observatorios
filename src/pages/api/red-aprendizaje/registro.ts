@@ -28,43 +28,85 @@ export const POST: APIRoute = async ({ request }) => {
 
     const body = await request.json();
 
-    const nombre = (body.nombre || "").trim();
+    const nombres = (body.nombres || "").trim();
+    const apellidos = (body.apellidos || "").trim();
+    const nombre = (body.nombre || `${nombres} ${apellidos}`).trim();
     const email = (body.email || "").trim().toLowerCase();
     const cedula = (body.cedula || "").trim();
-    const telefono = (body.telefono || "").trim();
+    const rangoEdad = (body.rangoEdad || body.rango_edad || body.fechaNacimiento || "").trim();
+    const condicionAcademica = (body.condicionAcademica || body.condicion_academica || "").trim();
     const universidad = (body.universidad || "").trim();
     const carrera = (body.carrera || "").trim();
-    const semestre = (body.semestre || "").trim();
-    const dia = body.dia;
-    const mes = (body.mes || "").trim();
-    const anio = body.anio;
+    const semestreBruto = (body.semestre || "").trim();
+    const semestre = condicionAcademica === "Graduado" && (!semestreBruto || semestreBruto === "No aplica")
+      ? "Graduado"
+      : (semestreBruto || "No aplica");
+    const telefono = (body.telefono || "").trim();
 
-    // Validación de campos obligatorios
-    if (
-      !nombre ||
-      !email ||
-      !cedula ||
-      !telefono ||
-      !universidad ||
-      !carrera ||
-      !semestre ||
-      !dia ||
-      !mes ||
-      !anio
-    ) {
+    const aceptaTratamientoDatos =
+      body.aceptaTratamientoDatos === true ||
+      body.aceptaTratamientoDatos === "on" ||
+      body.aceptaTratamientoDatos === "true" ||
+      body.tratamientoDatos === true;
+
+    if (!aceptaTratamientoDatos) {
       return new Response(
         JSON.stringify({
-          error: "Todos los campos son obligatorios para unirse a la red.",
+          error: "Debes autorizar la Política de Privacidad y Tratamiento de Datos Personales para registrarte.",
         }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
+        { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    // Formatear fecha de nacimiento
-    const fechaNacimiento = `${dia} de ${mes}, ${anio}`;
+    // Validación de campos obligatorios
+    if (!nombre) {
+      return new Response(
+        JSON.stringify({ error: "Los nombres y apellidos son obligatorios." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!email || !email.includes("@")) {
+      return new Response(
+        JSON.stringify({ error: "Ingresa un correo electrónico institucional o personal válido." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!cedula) {
+      return new Response(
+        JSON.stringify({ error: "El número de identificación es obligatorio." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!rangoEdad) {
+      return new Response(
+        JSON.stringify({ error: "Debes seleccionar tu rango de edad (solo mayores de edad)." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!condicionAcademica) {
+      return new Response(
+        JSON.stringify({ error: "Mencione si es actualmente estudiante o graduado." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!universidad) {
+      return new Response(
+        JSON.stringify({ error: "El nombre de la universidad es obligatorio." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!carrera) {
+      return new Response(
+        JSON.stringify({ error: "Menciona la carrera que estudias o en la que te graduaste." }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     // Validar si ya existe un registro con la misma cédula o correo
     const existentes = await clienteSupabase.consultar<any>(
@@ -77,7 +119,7 @@ export const POST: APIRoute = async ({ request }) => {
       const motivo =
         duplicado.email === email
           ? "Ya existe una solicitud registrada con este correo electrónico."
-          : "Ya existe una solicitud registrada con este número de cédula.";
+          : "Ya existe una solicitud registrada con este número de identificación.";
 
       return new Response(
         JSON.stringify({
@@ -96,7 +138,7 @@ export const POST: APIRoute = async ({ request }) => {
       email,
       cedula,
       telefono,
-      fecha_nacimiento: fechaNacimiento,
+      fecha_nacimiento: rangoEdad,
       universidad,
       carrera,
       semestre,

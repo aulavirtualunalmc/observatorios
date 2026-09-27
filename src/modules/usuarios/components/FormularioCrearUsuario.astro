@@ -1,12 +1,14 @@
 ---
 import CustomSelect from "../../../components/CustomSelect.astro";
 import Input from "../../../components/Input.astro";
-import { mesesOpciones, semestresOpciones } from "../../red-aprendizaje/constants/opciones-fecha";
+import {
+  rangosEdadOpciones,
+  condicionAcademicaOpciones,
+  semestresOpciones,
+} from "../../red-aprendizaje/constants/opciones-fecha";
 import {
   UserIcon,
   CardIcon,
-  PhoneIcon,
-  CalendarIcon,
   BookIcon,
   ArrowRightIcon,
   AltArrowLeftIcon,
@@ -39,11 +41,11 @@ import {
       </div>
 
       <h1 class="m-0 text-[clamp(1.8rem,3vw,2.4rem)] font-bold text-[#0a0a0a] tracking-[-0.03em] leading-tight mix-blend-multiply opacity-95">
-        Crear Nuevo Usuario Estudiante
+        Crear Nuevo Usuario
       </h1>
 
       <p class="m-0 text-sm text-[#787774] font-medium tracking-tight">
-        Ingresa los datos del estudiante para vincularlo directamente a la Red de Aprendizaje.
+        Ingresa los datos del estudiante o graduado para vincularlo directamente a la Red de Aprendizaje.
       </p>
     </header>
 
@@ -61,82 +63,54 @@ import {
             </span>
           </div>
 
+          <!-- Nombres y Apellidos separados -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              name="nombre"
-              label="Nombre completo"
-              placeholder="Ej. Alejandro Fernando Haro"
-              autocomplete="name"
+              name="nombres"
+              label="Nombres completos"
+              placeholder="Tus nombres completos"
+              autocomplete="given-name"
               icon={UserIcon}
               required
             />
+            <Input
+              name="apellidos"
+              label="Apellidos completos"
+              placeholder="Tus apellidos completos"
+              autocomplete="family-name"
+              icon={UserIcon}
+              required
+            />
+          </div>
 
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               name="email"
               label="Correo electrónico"
               type="email"
-              placeholder="estudiante@universidad.edu.co"
+              placeholder="tu.correo@ejemplo.com"
               autocomplete="email"
               icon={LetterIcon}
               required
             />
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               name="cedula"
-              label="Cédula de ciudadanía (Contraseña inicial)"
+              label="Número de identificación (el cual será su clave de acceso)"
               inputmode="numeric"
-              placeholder="0000000000"
+              placeholder="Ingresa tu número de documento"
               icon={CardIcon}
               required
             />
-            <Input
-              name="telefono"
-              label="Número de teléfono"
-              type="tel"
-              placeholder="300 123 4567"
-              autocomplete="tel"
-              icon={PhoneIcon}
-              required
-            />
           </div>
 
-          <!-- Fecha de nacimiento -->
-          <div class="flex flex-col gap-2">
-            <span class="flex items-center gap-2 text-[#0a0a0a] text-sm font-[560] tracking-[-0.01em]">
-              <CalendarIcon size={18} strokeWidth={1.5} className="text-[#0064c1]" />
-              Fecha de nacimiento
-            </span>
-
-            <div class="grid grid-cols-3 gap-3">
-              <Input
-                name="dia"
-                type="number"
-                placeholder="Día"
-                min="1"
-                max="31"
-                required
-              />
-
-              <CustomSelect
-                name="mes"
-                label="Mes"
-                placeholder="Mes"
-                options={mesesOpciones}
-                required
-              />
-
-              <Input
-                name="anio"
-                type="number"
-                placeholder="Año"
-                min="1900"
-                max={new Date().getFullYear()}
-                required
-              />
-            </div>
-          </div>
+          <!-- Selección de rango de edad -->
+          <CustomSelect
+            name="rangoEdad"
+            label="Selección su rango de edad (solo mayores de edad):"
+            placeholder="Selecciona tu rango de edad"
+            options={rangosEdadOpciones}
+            required
+          />
         </div>
 
         <!-- Sección 2: Información Académica & Estado -->
@@ -150,10 +124,19 @@ import {
             </span>
           </div>
 
+          <!-- Condición formativa actual -->
+          <CustomSelect
+            name="condicionAcademica"
+            label="Mencione si es actualmente:"
+            placeholder="Selecciona si eres estudiante o graduado"
+            options={condicionAcademicaOpciones}
+            required
+          />
+
           <Input
             name="universidad"
-            label="Universidad / Institución"
-            placeholder="Ej. Universidad Nacional de Colombia"
+            label="Nombre de la universidad en la que estudia o es egresado"
+            placeholder="Nombre de tu universidad"
             icon={BookIcon}
             required
           />
@@ -161,18 +144,17 @@ import {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               name="carrera"
-              label="Programa académico / Carrera"
-              placeholder="Ej. Ingeniería de Software"
+              label="Mencione la carrera que estudia o en la que se graduó"
+              placeholder="Tu carrera profesional"
               icon={BookIcon}
               required
             />
 
             <CustomSelect
               name="semestre"
-              label="Semestre actual"
-              placeholder="Seleccionar semestre"
+              label="Seleccione el semestre que cursa actualmente (en caso que aplique)"
+              placeholder="Selecciona (si aplica)"
               options={semestresOpciones}
-              required
             />
           </div>
 
@@ -206,10 +188,10 @@ import {
           <button
             type="submit"
             id="btn-guardar"
-            class="group/btn relative inline-flex items-center justify-center gap-2 px-7 py-2.5 rounded-full text-white text-xs font-semibold tracking-[-0.01em] cursor-pointer overflow-hidden transition-all duration-300 active:scale-[0.985] shadow-sm"
+            class="group/btn relative inline-flex items-center justify-center gap-2 px-7 py-2.5 rounded-full text-white text-xs font-semibold tracking-[-0.01em] cursor-pointer overflow-hidden transition-all duration-300 active:scale-[0.985] shadow-sm disabled:opacity-75 disabled:cursor-not-allowed"
             style="background-image: radial-gradient(120% 80% at 50% 0%, #ffffff42, #ffffff0a 36%, #ffffff00 54%), linear-gradient(#66b2ff, #4fa3ff 56%, #4a9ffb); box-shadow: inset 0 1.5px 1px rgba(255,255,255,0.5), inset 0 9px 16px -10px rgba(255,255,255,0.3), inset 0 -14px 22px -10px rgba(26,106,202,0.5), 0 4px 12px -2px rgba(58,138,244,0.4);"
           >
-            <span class="relative z-10">Guardar y registrar estudiante</span>
+            <span class="relative z-10">Guardar y registrar usuario</span>
             <ArrowRightIcon
               size={14}
               strokeWidth={2}
@@ -239,21 +221,35 @@ import {
       }
 
       const formData = new FormData(form);
-      const dia = formData.get("dia");
-      const mes = formData.get("mes");
-      const anio = formData.get("anio");
-      const fechaNacimiento = dia && mes && anio ? `${dia} de ${mes}, ${anio}` : "";
+      const nombres = (formData.get("nombres") as string || "").trim();
+      const apellidos = (formData.get("apellidos") as string || "").trim();
+      const nombre = (formData.get("nombre") as string || `${nombres} ${apellidos}`).trim();
+      const email = (formData.get("email") as string || "").trim();
+      const cedula = (formData.get("cedula") as string || "").trim();
+      const rangoEdad = (formData.get("rangoEdad") as string || "").trim();
+      const condicionAcademica = (formData.get("condicionAcademica") as string || "").trim();
+      const universidad = (formData.get("universidad") as string || "").trim();
+      const carrera = (formData.get("carrera") as string || "").trim();
+      const semestreBruto = (formData.get("semestre") as string || "").trim();
+      const semestre =
+        condicionAcademica === "Graduado" && (!semestreBruto || semestreBruto === "No aplica")
+          ? "Graduado"
+          : (semestreBruto || "No aplica");
+      const estado = (formData.get("estado") as string || "Activo").trim();
 
       const payload = {
-        nombre: formData.get("nombre"),
-        email: formData.get("email"),
-        cedula: formData.get("cedula"),
-        telefono: formData.get("telefono"),
-        fechaNacimiento,
-        universidad: formData.get("universidad"),
-        carrera: formData.get("carrera"),
-        semestre: formData.get("semestre"),
-        estado: formData.get("estado") || "Activo",
+        nombres,
+        apellidos,
+        nombre,
+        email,
+        cedula,
+        rangoEdad,
+        fechaNacimiento: rangoEdad,
+        condicionAcademica,
+        universidad,
+        carrera,
+        semestre,
+        estado,
       };
 
       if (btnGuardar) {

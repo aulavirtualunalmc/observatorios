@@ -3,12 +3,15 @@ export interface UsuarioRed {
   nombre: string;
   email: string;
   cedula: string;
-  telefono: string;
-  fechaNacimiento: string;
+  telefono?: string;
+  rangoEdad?: string;
+  condicionAcademica?: string;
+  fechaNacimiento?: string;
   universidad: string;
   carrera: string;
   semestre: string;
   fechaRegistro: string;
+  ultimoIngreso?: string;
   estado: "Activo" | "Pendiente" | "Inactivo";
 }
 

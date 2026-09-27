@@ -96,6 +96,31 @@ export const clienteSupabase = {
   },
 
   /**
+   * Inserta un lote de múltiples registros en una tabla de Supabase en una sola petición
+   */
+  async insertarMasivo<T>(tabla: string, registros: Record<string, any>[]): Promise<T[]> {
+    if (registros.length === 0) return [];
+    this.limpiarCache(tabla);
+    const url = `${SUPABASE_URL}/rest/v1/${tabla}`;
+    const respuesta = await fetch(url, {
+      method: "POST",
+      headers: {
+        ...cabecerasBase,
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(registros),
+    });
+
+    if (!respuesta.ok) {
+      const errorDetalle = await respuesta.text();
+      throw new Error(`Error al insertar lote en ${tabla}: ${respuesta.status} - ${errorDetalle}`);
+    }
+
+    const resultado = await respuesta.json();
+    return Array.isArray(resultado) ? resultado : [resultado];
+  },
+
+  /**
    * Actualiza un registro por ID
    */
   async actualizar<T>(tabla: string, id: string, datos: Record<string, any>): Promise<T> {

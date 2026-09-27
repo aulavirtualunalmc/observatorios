@@ -102,7 +102,7 @@ export const TablaInscripcionesRed: React.FC<Props> = ({ solicitudes: solicitude
         sol.cedula.includes(termino) ||
         sol.carrera.toLowerCase().includes(termino) ||
         sol.universidad.toLowerCase().includes(termino) ||
-        sol.telefono.includes(termino)
+        (sol.telefono ? sol.telefono.includes(termino) : false)
       );
     });
 
@@ -525,13 +525,18 @@ export const TablaInscripcionesRed: React.FC<Props> = ({ solicitudes: solicitude
                       {/* Identificación, Correo & Teléfono */}
                       <Table.Cell className="py-4 px-4">
                         <div className="flex flex-col gap-0.5">
-                          <span className="font-mono font-semibold text-[#0a0a0a]">CC: {sol.cedula}</span>
+                          <span className="font-mono font-semibold text-[#0a0a0a]">Doc: {sol.cedula}</span>
                           {sol.email && (
                             <span className="text-[0.72rem] text-[#0064c1] font-medium truncate max-w-[190px]" title={sol.email}>
                               {sol.email}
                             </span>
                           )}
-                          <span className="text-[0.72rem] text-[#787774]">Tel: {sol.telefono}</span>
+                          {sol.telefono && (
+                            <span className="text-[0.72rem] text-[#787774]">Tel: {sol.telefono}</span>
+                          )}
+                          {sol.fechaNacimiento && (
+                            <span className="text-[0.68rem] text-[#787774] font-medium">Edad: {sol.fechaNacimiento}</span>
+                          )}
                         </div>
                       </Table.Cell>
 

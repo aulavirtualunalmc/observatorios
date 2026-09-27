@@ -13,6 +13,7 @@ import {
   AltArrowLeftIcon,
   AltArrowRightIcon,
   UsersGroupRoundedIcon,
+  ClockCircleIcon,
 } from "@solar-icons/react/outline";
 import type { UsuarioRed } from "../services/usuarios.types";
 import { ServicioUsuarios } from "../services/usuarios.service";
@@ -21,7 +22,7 @@ interface Props {
   usuarios: UsuarioRed[];
 }
 
-type CampoOrden = "nombre" | "cedula" | "carrera" | "universidad" | "estado";
+type CampoOrden = "nombre" | "cedula" | "carrera" | "universidad" | "estado" | "ultimoIngreso";
 type DireccionOrden = "asc" | "desc";
 type FiltroEstado = "Todos" | "Activo" | "Pendiente" | "Inactivo";
 
@@ -37,8 +38,52 @@ export const TablaUsuarios: React.FC<Props> = ({ usuarios: usuariosIniciales }) 
   const [columnaOrden, setColumnaOrden] = useState<CampoOrden>("nombre");
   const [direccionOrden, setDireccionOrden] = useState<DireccionOrden>("asc");
 
+  const recargarUsuarios = async () => {
+    try {
+      const res = await fetch("/api/usuarios");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setListaUsuarios(
+            data.map((item: any) => {
+              const semestreValor = item.semestre || "";
+              let semestreFormateado = "No especificado";
+              if (semestreValor) {
+                if (semestreValor.includes("Semestre") || semestreValor === "Graduado" || semestreValor === "No aplica") {
+                  semestreFormateado = semestreValor;
+                } else {
+                  semestreFormateado = `${semestreValor}° Semestre`;
+                }
+              }
+
+              return {
+                id: item.id,
+                nombre: item.nombre || "Sin nombre",
+                email: item.email || "",
+                cedula: item.cedula || "",
+                telefono: item.telefono || undefined,
+                rangoEdad: item.rango_edad || item.fecha_nacimiento || undefined,
+                condicionAcademica: item.condicion_academica || (semestreValor === "Graduado" ? "Graduado" : "Estudiante"),
+                fechaNacimiento: item.fecha_nacimiento || item.rango_edad || "",
+                universidad: item.universidad || "Sin universidad",
+                carrera: item.carrera || "Sin carrera",
+                semestre: semestreFormateado,
+                fechaRegistro: item.created_at ? item.created_at.split("T")[0] : "Reciente",
+                ultimoIngreso: item.ultimo_ingreso || item.last_sign_in_at || (item.updated_at ? item.updated_at.split("T")[0] : (item.created_at ? item.created_at.split("T")[0] : "Sin registro")),
+                estado: (item.estado as any) || "Activo",
+              };
+            })
+          );
+        }
+      }
+    } catch (err) {
+      console.error("Error al recargar usuarios en tiempo real:", err);
+    }
+  };
+
   useEffect(() => {
     setMontado(true);
+    recargarUsuarios();
   }, []);
 
   // Modal de Confirmación Masiva
@@ -68,9 +113,12 @@ export const TablaUsuarios: React.FC<Props> = ({ usuarios: usuariosIniciales }) 
       return (
         u.nombre.toLowerCase().includes(termino) ||
         u.cedula.includes(termino) ||
+        (u.email && u.email.toLowerCase().includes(termino)) ||
         u.carrera.toLowerCase().includes(termino) ||
         u.universidad.toLowerCase().includes(termino) ||
-        u.telefono.includes(termino)
+        (u.condicionAcademica && u.condicionAcademica.toLowerCase().includes(termino)) ||
+        (u.rangoEdad && u.rangoEdad.toLowerCase().includes(termino)) ||
+        (u.telefono && u.telefono.includes(termino))
       );
     });
 
@@ -317,9 +365,22 @@ export const TablaUsuarios: React.FC<Props> = ({ usuarios: usuariosIniciales }) 
                     className="py-4 px-4 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[#0064c1] cursor-pointer hover:bg-black/[0.03] select-none"
                   >
                     <div className="flex items-center gap-1.5">
-                      <span>Universidad</span>
+                       <span>Universidad</span>
                       <span className="text-[0.65rem] text-[#787774]">
                         {columnaOrden === "universidad" ? (direccionOrden === "asc" ? "▲" : "▼") : "↕"}
+                      </span>
+                    </div>
+                  </Table.Column>
+
+                  {/* Columna Último Ingreso */}
+                  <Table.Column
+                    onClick={() => manejarOrden("ultimoIngreso")}
+                    className="py-4 px-4 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-[#0064c1] cursor-pointer hover:bg-black/[0.03] select-none"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span>Último Ingreso</span>
+                      <span className="text-[0.65rem] text-[#787774]">
+                        {columnaOrden === "ultimoIngreso" ? (direccionOrden === "asc" ? "▲" : "▼") : "↕"}
                       </span>
                     </div>
                   </Table.Column>
@@ -375,10 +436,21 @@ export const TablaUsuarios: React.FC<Props> = ({ usuarios: usuariosIniciales }) 
                           >
                             {user.nombre.charAt(0).toUpperCase()}
                           </div>
-                          <div className="flex flex-col">
-                            <span className="font-bold text-[#0a0a0a] group-hover/row:text-[#0064c1] transition-colors">
-                              {user.nombre}
-                            </span>
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-bold text-[#0a0a0a] group-hover/row:text-[#0064c1] transition-colors">
+                                {user.nombre}
+                              </span>
+                              {user.condicionAcademica && (
+                                <span className={`text-[0.65rem] font-semibold px-1.5 py-0.2 rounded-md ${
+                                  user.condicionAcademica === "Graduado"
+                                    ? "bg-purple-500/10 text-purple-700 border border-purple-500/20"
+                                    : "bg-blue-500/10 text-blue-700 border border-blue-500/20"
+                                }`}>
+                                  {user.condicionAcademica}
+                                </span>
+                              )}
+                            </div>
                             <span className="text-[0.7rem] text-[#787774]">
                               Registro: {user.fechaRegistro}
                             </span>
@@ -386,7 +458,7 @@ export const TablaUsuarios: React.FC<Props> = ({ usuarios: usuariosIniciales }) 
                         </div>
                       </Table.Cell>
 
-                      {/* Identificación, Correo & Teléfono */}
+                      {/* Identificación, Correo & Rango de Edad */}
                       <Table.Cell className="py-4 px-4">
                         <div className="flex flex-col gap-0.5">
                           <span className="font-mono font-semibold text-[#0a0a0a]">CC: {user.cedula}</span>
@@ -395,7 +467,16 @@ export const TablaUsuarios: React.FC<Props> = ({ usuarios: usuariosIniciales }) 
                               {user.email}
                             </span>
                           )}
-                          <span className="text-[0.72rem] text-[#787774]">Tel: {user.telefono}</span>
+                          {user.rangoEdad && (
+                            <span className="text-[0.7rem] text-[#787774]">
+                              Edad: {user.rangoEdad}
+                            </span>
+                          )}
+                          {user.telefono && (
+                            <span className="text-[0.7rem] text-[#787774]">
+                              Tel: {user.telefono}
+                            </span>
+                          )}
                         </div>
                       </Table.Cell>
 
@@ -412,6 +493,16 @@ export const TablaUsuarios: React.FC<Props> = ({ usuarios: usuariosIniciales }) 
                       {/* Universidad */}
                       <Table.Cell className="py-4 px-4">
                         <span className="text-[#2f3437] font-medium">{user.universidad}</span>
+                      </Table.Cell>
+
+                      {/* Último Ingreso */}
+                      <Table.Cell className="py-4 px-4">
+                        <div className="flex items-center gap-1.5 text-xs text-[#2f3437]">
+                          <ClockCircleIcon size={14} strokeWidth={1.8} className="text-[#787774] shrink-0" />
+                          <span className="font-medium text-[0.76rem] text-[#0a0a0a]">
+                            {user.ultimoIngreso || "Sin registro"}
+                          </span>
+                        </div>
                       </Table.Cell>
 
                       {/* Estado */}

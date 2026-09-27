@@ -160,6 +160,28 @@ serve(async (req) => {
               color: #777777;
               border-bottom: 1px solid #eeeeee;
             ">
+              Plataforma
+            </td>
+            <td style="
+              padding: 13px 0;
+              font-size: 13px;
+              border-bottom: 1px solid #eeeeee;
+              word-break: break-word;
+            ">
+              <a href="https://observatoriors.com/" target="_blank" style="color: #0066cc; text-decoration: underline; font-weight: 600;">
+                https://observatoriors.com/
+              </a>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="
+              padding: 13px 0;
+              width: 42%;
+              font-size: 13px;
+              color: #777777;
+              border-bottom: 1px solid #eeeeee;
+            ">
               Correo
             </td>
             <td style="
