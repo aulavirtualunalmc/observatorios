@@ -16,8 +16,8 @@ import {
   HamburgerMenuIcon,
   CloseSquareIcon,
   Logout2Icon,
+  ChatRoundDotsIcon,
 } from "@solar-icons/react/outline";
-import { ServicioRepositorio } from "../modules/repositorio/services/repositorio.service";
 import { ServicioContenidoFeed } from "../modules/contenido-feed/services/contenido-feed.service";
 import { ServicioInscripcionesRed } from "../modules/red-aprendizaje/services/inscripciones.service";
 
@@ -47,19 +47,11 @@ interface Props {
 const { active = "Inicio" } = Astro.props;
 
 // Obtener datos reales de las colecciones de la base de datos
-const [documentos, feedItems, solicitudes] = await Promise.all([
-  ServicioRepositorio.obtenerDocumentos().catch(() => []),
+const [feedItems, solicitudes] = await Promise.all([
   ServicioContenidoFeed.obtenerItems().catch(() => []),
   ServicioInscripcionesRed.obtenerSolicitudes().catch(() => []),
 ]);
 
-const countRepositorio = documentos.length;
-const countNoticias = feedItems.filter(
-  (item) => item.tipo === "noticia" && item.estado === "Publicado"
-).length;
-const countYoutube = feedItems.filter(
-  (item) => item.tipo === "youtube" && item.estado === "Publicado"
-).length;
 const countFeedTotal = feedItems.length;
 const countSolicitudesPendientes = solicitudes.filter(
   (s) => s.estado === "Pendiente"
@@ -71,22 +63,21 @@ const explorar: Item[] = [
     href: "/dashboard/repositorio",
     label: "Repositorio",
     icon: LibraryIcon,
-    badge: String(countRepositorio),
-    badgeKey: "repositorio",
   },
   {
     href: "/dashboard/news",
     label: "News Feed",
     icon: NotesIcon,
-    badge: String(countNoticias),
-    badgeKey: "news",
   },
   {
     href: "/dashboard/youtube",
     label: "Youtube Feed",
     icon: VideocameraIcon,
-    badge: String(countYoutube),
-    badgeKey: "youtube",
+  },
+  {
+    href: "/dashboard/whatsapp",
+    label: "Canal de WhatsApp",
+    icon: ChatRoundDotsIcon,
   },
 ];
 
@@ -197,7 +188,7 @@ const administracion: Item[] = [
 
   <a href="/dashboard" class="flex items-center justify-center no-underline">
     <img
-      src="/Group 19.svg"
+      src="/logo observatorio RS.png"
       alt="Logo Observatorio"
       class="h-8 w-auto object-contain"
     />
@@ -267,7 +258,7 @@ const administracion: Item[] = [
         aria-label="Volver al inicio"
       >
         <img
-          src="/Group 19.svg"
+          src="/logo observatorio RS.png"
           alt="Logo Observatorio"
           class="h-11 w-auto max-w-[12rem] object-contain transition-transform duration-300 group-hover/logo:scale-105 shrink-0"
         />

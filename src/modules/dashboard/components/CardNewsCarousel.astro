@@ -89,7 +89,7 @@ const carouselId = "news-feed-carousel";
     ) : (
       <div class="relative w-full overflow-hidden rounded-[22px]">
         <div
-          class="carousel-track flex w-full transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
+          class="carousel-track flex w-full transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
           style="transform: translateX(0%);"
         >
           {items.map((item) => (
@@ -182,7 +182,14 @@ const carouselId = "news-feed-carousel";
 </div>
 
 <script>
+  let newsAutoPlayTimer: ReturnType<typeof setInterval> | null = null;
+
   function initNewsCarousel() {
+    if (newsAutoPlayTimer) {
+      clearInterval(newsAutoPlayTimer);
+      newsAutoPlayTimer = null;
+    }
+
     const container = document.getElementById("news-feed-carousel");
     if (!container) return;
 
@@ -195,6 +202,7 @@ const carouselId = "news-feed-carousel";
     if (!track || total <= 1) return;
 
     let activeIndex = 0;
+    let isPaused = false;
 
     const updateSlide = (targetIndex: number) => {
       activeIndex = (targetIndex + total) % total;
@@ -211,16 +219,50 @@ const carouselId = "news-feed-carousel";
       });
     };
 
+    const nextSlide = () => {
+      updateSlide(activeIndex + 1);
+    };
+
+    const startAutoplay = () => {
+      if (newsAutoPlayTimer) clearInterval(newsAutoPlayTimer);
+      newsAutoPlayTimer = setInterval(() => {
+        if (!isPaused) {
+          nextSlide();
+        }
+      }, 5000);
+    };
+
+    const resetAutoplay = () => {
+      startAutoplay();
+    };
+
     dots.forEach((dot, idx) => {
-      dot.addEventListener("click", () => updateSlide(idx));
+      dot.addEventListener("click", () => {
+        updateSlide(idx);
+        resetAutoplay();
+      });
     });
 
     if (prevBtn) {
-      prevBtn.addEventListener("click", () => updateSlide(activeIndex - 1));
+      prevBtn.addEventListener("click", () => {
+        updateSlide(activeIndex - 1);
+        resetAutoplay();
+      });
     }
     if (nextBtn) {
-      nextBtn.addEventListener("click", () => updateSlide(activeIndex + 1));
+      nextBtn.addEventListener("click", () => {
+        updateSlide(activeIndex + 1);
+        resetAutoplay();
+      });
     }
+
+    // Pausar rotación automática al colocar el cursor encima (lectura cómoda)
+    container.addEventListener("mouseenter", () => {
+      isPaused = true;
+    });
+    container.addEventListener("mouseleave", () => {
+      isPaused = false;
+    });
 
     // Soporte para gestos táctiles (Swipe)
     let touchStartX = 0;
@@ -228,6 +270,7 @@ const carouselId = "news-feed-carousel";
 
     container.addEventListener("touchstart", (e) => {
       touchStartX = e.changedTouches[0].screenX;
+      isPaused = true;
     }, { passive: true });
 
     container.addEventListener("touchend", (e) => {
@@ -239,11 +282,21 @@ const carouselId = "news-feed-carousel";
         } else {
           updateSlide(activeIndex - 1);
         }
+        resetAutoplay();
       }
+      isPaused = false;
     }, { passive: true });
+
+    startAutoplay();
   }
 
   initNewsCarousel();
   document.addEventListener("astro:page-load", initNewsCarousel);
+  document.addEventListener("astro:before-swap", () => {
+    if (newsAutoPlayTimer) {
+      clearInterval(newsAutoPlayTimer);
+      newsAutoPlayTimer = null;
+    }
+  });
 </script>
 

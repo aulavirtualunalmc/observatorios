@@ -1,0 +1,34 @@
+---
+export const prerender = false;
+
+import "../../styles/global.css";
+import { ClientRouter } from "astro:transitions";
+import Sidebar from "../../components/Sidebar.astro";
+import { ContenidoCanalWhatsapp } from "../../modules/dashboard";
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Canal Oficial de WhatsApp del Observatorio de Responsabilidad Social y Sostenibilidad"
+    />
+    <title>Observatorio · Canal de WhatsApp</title>
+    <link rel="icon" type="image/png" href="/logo observatorio RS.png" />
+    <ClientRouter />
+  </head>
+  <body class="bg-[#fbfbfa] text-[#0a0a0a]">
+    <div class="flex min-h-svh w-full">
+      <!-- Barra lateral de navegación con Canal de WhatsApp activo -->
+      <Sidebar active="Canal de WhatsApp" />
+
+      <!-- Contenido principal de Canal de WhatsApp -->
+      <main class="flex-1 flex flex-col min-w-0">
+        <ContenidoCanalWhatsapp />
+      </main>
+    </div>
+  </body>
+</html>
