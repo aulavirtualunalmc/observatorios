@@ -33,7 +33,7 @@ serve(async (req) => {
       },
     });
 
-    const asunto = "Notificación de Admisión - Red de Aprendizaje";
+    const asunto = "Bienvenid@ - Red de Aprendizaje";
     const senderEmail = Deno.env.get("EMAIL_FROM") || "Observatorio de Responsabilidad Social <Red@observatoriors.com>";
 
     // Plantilla HTML oficial del Observatorio
@@ -43,7 +43,7 @@ serve(async (req) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notificación de Admisión</title>
+  <title>Bienvenid@ - Red de Aprendizaje</title>
 </head>
 
 <body style="
@@ -213,7 +213,7 @@ serve(async (req) => {
               font-family: monospace;
               border-bottom: 1px solid #eeeeee;
             ">
-              ${cedula || "Tu número de cédula"}
+              ${cedula}
             </td>
           </tr>
         </table>
@@ -224,24 +224,7 @@ serve(async (req) => {
           font-size: 14px;
           color: #444444;
         ">
-          Saludos,
-        </p>
-
-        <p style="
-          margin: 5px 0 0 0;
-          font-size: 14px;
-          font-weight: 600;
-          color: #222222;
-        ">
-          Observatorio de Responsabilidad Social y Sostenibilidad
-        </p>
-
-        <p style="
-          margin: 2px 0 0 0;
-          font-size: 12px;
-          color: #777777;
-        ">
-          Red de Aprendizaje
+          Si tienes preguntas o inquietudes al correo: red@observatoriors.com
         </p>
       </td>
     </tr>
@@ -266,17 +249,24 @@ serve(async (req) => {
     `;
 
     // Envío del correo mediante Zoho SMTP
-    await transporter.sendMail({
+    const infoEnvio = await transporter.sendMail({
       from: senderEmail,
       to: email,
       subject: asunto,
       html: html,
     });
 
+    console.log("Resultado de entrega SMTP de Zoho:", {
+      messageId: infoEnvio.messageId,
+      accepted: infoEnvio.accepted,
+      rejected: infoEnvio.rejected,
+      response: infoEnvio.response,
+    });
+
     // Guardado en la base de datos registro_correos_red
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-    
+
     if (supabaseUrl && supabaseServiceKey) {
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
       await supabase.from("registro_correos_red").insert({
@@ -291,13 +281,23 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ exito: true, mensaje: "Correo enviado exitosamente vía Zoho" }),
+      JSON.stringify({
+        exito: true,
+        mensaje: "Correo enviado exitosamente vía Zoho",
+        messageId: infoEnvio.messageId,
+        accepted: infoEnvio.accepted,
+        rejected: infoEnvio.rejected,
+        smtpResponse: infoEnvio.response,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
     console.error("Error al despachar correo con Zoho:", error);
     return new Response(
-      JSON.stringify({ error: error.message || "Error al enviar correo" }),
+      JSON.stringify({
+        error: error.message || "Error al enviar correo",
+        detalle: error.stack || String(error),
+      }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

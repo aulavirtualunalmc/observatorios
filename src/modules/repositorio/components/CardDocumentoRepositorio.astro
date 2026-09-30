@@ -12,7 +12,7 @@ const { documento } = Astro.props;
 ---
 
 <article
-  class="group/card relative flex flex-col justify-between rounded-[28px] p-6 bg-white/95 border border-white/80 shadow-[0_20px_45px_-18px_rgba(9,60,120,0.14),0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_24px_50px_-14px_rgba(9,60,120,0.2)]"
+  class="group/card relative flex flex-col justify-between h-full w-full rounded-[28px] p-6 bg-white/95 border border-white/80 shadow-[0_20px_45px_-18px_rgba(9,60,120,0.14),0_1px_3px_rgba(0,0,0,0.03)] backdrop-blur-md transition-all duration-300 hover:shadow-[0_24px_50px_-14px_rgba(9,60,120,0.2)]"
   data-doc-id={documento.id}
 >
   <!-- Encabezado de la Card: Línea de investigación, Categoría y Año -->
@@ -37,30 +37,20 @@ const { documento } = Astro.props;
     </span>
   </div>
 
-  <!-- Contenido: Título, Metadatos y Autores -->
-  <div class="flex flex-col gap-4 my-4">
-    <!-- Título principal -->
-    <h3 class="m-0 text-base md:text-[1.08rem] font-bold text-[#0a0a0a] tracking-tight leading-snug group-hover/card:text-[#0064c1] transition-colors duration-300 line-clamp-3">
+  <!-- Contenido: Título y Autores -->
+  <div class="flex-1 flex flex-col justify-between gap-4 my-4">
+    <!-- Título principal sin truncamiento -->
+    <h3
+      class="m-0 text-base md:text-[1.05rem] font-bold text-[#0a0a0a] tracking-tight leading-snug group-hover/card:text-[#0064c1] transition-colors duration-300 break-words"
+      title={documento.titulo}
+    >
       {documento.titulo}
     </h3>
 
-    <!-- Metadatos clave: Tipo de fuente y País -->
-    <div class="grid grid-cols-2 gap-3 py-2 px-3 rounded-2xl bg-black/[0.02] border border-black/[0.04]">
-      <div class="flex flex-col gap-0.5 min-w-0">
-        <span class="text-[0.68rem] font-medium text-[#787774]">Tipo de fuente</span>
-        <span class="text-xs font-bold text-[#0a0a0a] truncate">{documento.tipoFuente}</span>
-      </div>
-
-      <div class="flex flex-col gap-0.5 min-w-0">
-        <span class="text-[0.68rem] font-medium text-[#787774]">País</span>
-        <span class="text-xs font-bold text-[#0a0a0a] truncate">{documento.pais}</span>
-      </div>
-    </div>
-
     <!-- Autores -->
-    <div class="flex flex-col gap-1">
+    <div class="flex flex-col gap-1 mt-auto pt-1">
       <span class="text-[0.68rem] font-medium text-[#787774]">Autores</span>
-      <p class="m-0 text-xs text-[#2f3437] font-medium leading-relaxed line-clamp-2">
+      <p class="m-0 text-xs text-[#2f3437] font-medium leading-relaxed line-clamp-3" title={documento.autores.join(", ")}>
         {documento.autores.join(", ")}
       </p>
     </div>

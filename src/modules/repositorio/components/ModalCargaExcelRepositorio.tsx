@@ -474,7 +474,10 @@ export const ModalCargaExcelRepositorio: React.FC<Props> = ({
                       className="p-3 rounded-xl bg-black/[0.02] border border-black/[0.06] flex flex-col gap-1.5 hover:bg-black/[0.03] transition-colors"
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <span className="text-xs font-bold text-[#0a0a0a] leading-snug line-clamp-1">
+                        <span
+                          className="text-xs font-bold text-[#0a0a0a] leading-snug line-clamp-2"
+                          title={fila.titulo}
+                        >
                           {idx + 1}. {fila.titulo}
                         </span>
                         <span className="shrink-0 text-[0.66rem] font-bold font-mono px-2 py-0.5 rounded-full bg-[#0064c1]/10 text-[#0064c1]">

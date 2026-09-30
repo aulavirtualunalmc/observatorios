@@ -164,7 +164,7 @@ const listaCategorias = Array.from(conteosPorCategoria.keys()).sort((a, b) => {
           >
             {documentos.map((doc) => (
               <div
-                class="item-documento-repositorio h-full"
+                class="item-documento-repositorio h-full flex flex-col"
                 data-titulo={doc.titulo.toLowerCase()}
                 data-linea={doc.lineaInvestigacion.toLowerCase()}
                 data-categoria={(doc.categoria || "otras investigaciones").toLowerCase()}

@@ -437,7 +437,10 @@ export const TablaContenidoRepositorio: React.FC<Props> = ({ documentosIniciales
                       {/* Título & Resumen & Enlaces */}
                       <Table.Cell className="py-4 px-4">
                         <div className="flex flex-col gap-1 max-w-md">
-                          <span className="font-bold text-[#0a0a0a] text-xs leading-snug group-hover/row:text-[#0064c1] transition-colors line-clamp-2">
+                          <span
+                            className="font-bold text-[#0a0a0a] text-xs leading-snug group-hover/row:text-[#0064c1] transition-colors line-clamp-4"
+                            title={item.titulo}
+                          >
                             {item.titulo}
                           </span>
                           {/* Links / Páginas Web */}
