@@ -7,3 +7,5 @@ export { default as FormularioCrearDocumento } from "./components/FormularioCrea
 export { default as FormularioEditarDocumento } from "./components/FormularioEditarDocumento";
 export * from "./services/repositorio.service";
 export * from "./services/repositorio.types";
+export * from "./utils/tema.utils";
+export * from "./utils/categoria.utils";

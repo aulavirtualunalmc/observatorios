@@ -16,6 +16,7 @@ import {
   LayersMinimalisticIcon,
   RefreshIcon,
 } from "@solar-icons/react/outline";
+import { CATEGORIAS_VALIDAS, detectarCategoriaValida } from "../utils/categoria.utils";
 
 export const FormularioCrearDocumento: React.FC = () => {
   const [titulo, setTitulo] = useState("");
@@ -90,7 +91,7 @@ export const FormularioCrearDocumento: React.FC = () => {
           lineaInvestigacion: lineaInvestigacion.trim(),
           tipoFuente: tipoFuente.trim(),
           pais: pais.trim(),
-          categoria: categoria.trim() || null,
+          categoria: detectarCategoriaValida(categoria.trim()) || categoria.trim() || null,
           autores,
           paginasWeb,
           enlaceDocumento: paginasWeb.length > 0 ? paginasWeb[0] : null,
@@ -267,19 +268,40 @@ export const FormularioCrearDocumento: React.FC = () => {
             </div>
           </div>
 
-          {/* Categoría / Temática */}
+          {/* Categoría */}
           <div className="group/field flex flex-col gap-2">
-            <label className="flex items-center gap-2 text-[#0a0a0a] text-sm font-medium tracking-[-0.01em]">
-              Categoría temática (Opcional)
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 text-[#0a0a0a] text-sm font-medium tracking-[-0.01em]">
+                Categoría
+              </label>
+              <span className="text-xs text-[#787774]">Selecciona o escribe</span>
+            </div>
             <div className="w-full rounded-2xl border border-black/10 bg-white hover:border-black/20 focus-within:border-[#259ce6] focus-within:ring-4 focus-within:ring-[#259ce6]/10 transition-colors duration-200 ease-out">
               <input
                 type="text"
                 value={categoria}
                 onChange={(e) => setCategoria(e.target.value)}
-                placeholder="Ej. Migración y Fronteras, Derechos Humanos, Energía Renovable..."
+                placeholder="Ej. Energía, Agua, Biodiversidad, Prácticas..."
                 className="w-full bg-transparent px-4 py-3.5 text-base text-[#0a0a0a] outline-none placeholder:text-[#787774]/70"
               />
+            </div>
+            {/* Chips rápidos de selección de categorías oficiales */}
+            <div className="flex items-center gap-1.5 flex-wrap pt-1">
+              <span className="text-[0.72rem] text-[#787774] font-medium">Categorías oficiales:</span>
+              {CATEGORIAS_VALIDAS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCategoria(c)}
+                  className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                    categoria.toLowerCase() === c.toLowerCase()
+                      ? "bg-[#0064c1] text-white shadow-xs"
+                      : "bg-[#0064c1]/10 text-[#0064c1] hover:bg-[#0064c1]/20 border border-[#0064c1]/20"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
             </div>
           </div>
         </div>

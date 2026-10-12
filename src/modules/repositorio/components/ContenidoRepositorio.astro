@@ -2,6 +2,7 @@
 import SkyShader from "../../../components/SkyShader.astro";
 import CardDocumentoRepositorio from "./CardDocumentoRepositorio.astro";
 import { ServicioRepositorio } from "../services/repositorio.service";
+import { CATEGORIAS_VALIDAS, detectarCategoriaValida } from "../utils/categoria.utils";
 import {
   LibraryIcon,
   RoundedMagnifierZoomInIcon,
@@ -12,22 +13,38 @@ import {
   AltArrowRightIcon,
 } from "@solar-icons/react/outline";
 
-const documentos = await ServicioRepositorio.obtenerDocumentos();
+const documentosRaw = await ServicioRepositorio.obtenerDocumentos();
+
+// Normalizar cada documento para que su categoría se homologue con las 4 categorías oficiales
+const documentos = documentosRaw.map((doc) => {
+  const catDetectada = detectarCategoriaValida(doc.categoria || doc.lineaInvestigacion || "");
+  const catFinal = catDetectada || doc.categoria?.trim() || "Otras Investigaciones";
+  return {
+    ...doc,
+    categoria: catFinal,
+  };
+});
 
 // Extraer categorías únicas y conteos
 const conteosPorCategoria = new Map<string, number>();
 
+// Inicializar categorías válidas oficiales para garantizar su presencia
+CATEGORIAS_VALIDAS.forEach((cat) => {
+  conteosPorCategoria.set(cat, 0);
+});
+
 documentos.forEach((doc) => {
-  const cat = doc.categoria?.trim() || "Otras Investigaciones";
+  const cat = doc.categoria || "Otras Investigaciones";
   conteosPorCategoria.set(cat, (conteosPorCategoria.get(cat) || 0) + 1);
 });
 
-// Ordenar categorías (colocar "Otras Investigaciones" al final)
-const listaCategorias = Array.from(conteosPorCategoria.keys()).sort((a, b) => {
-  if (a.toLowerCase().includes("otras") || a.toLowerCase().includes("general")) return 1;
-  if (b.toLowerCase().includes("otras") || b.toLowerCase().includes("general")) return -1;
-  return a.localeCompare(b);
-});
+// Ordenar categorías: categorías oficiales en su orden canónico, seguidas de otras categorías con documentos
+const listaCategorias: string[] = [
+  ...CATEGORIAS_VALIDAS,
+  ...Array.from(conteosPorCategoria.keys()).filter(
+    (c) => !CATEGORIAS_VALIDAS.includes(c as any) && (conteosPorCategoria.get(c) || 0) > 0
+  ),
+];
 ---
 
 <div class="relative flex-1 flex flex-col w-full animate-rise isolate overflow-x-clip">
@@ -112,15 +129,11 @@ const listaCategorias = Array.from(conteosPorCategoria.keys()).sort((a, b) => {
               class="btn-tab-categoria active relative inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs cursor-pointer shrink-0"
             >
               <LayersMinimalisticIcon size={15} />
-              <span>Todas</span>
-              <span class="tab-badge font-mono text-[0.68rem] px-2 py-0.5 rounded-full font-bold">
-                {documentos.length}
-              </span>
+              <span>Todas las categorías</span>
             </button>
 
             <!-- Tabs individuales de categoría -->
             {listaCategorias.map((cat) => {
-              const totalDocs = conteosPorCategoria.get(cat) || 0;
               return (
                 <button
                   type="button"
@@ -129,9 +142,6 @@ const listaCategorias = Array.from(conteosPorCategoria.keys()).sort((a, b) => {
                 >
                   <BookBookmarkIcon size={14} />
                   <span>{cat}</span>
-                  <span class="tab-badge font-mono text-[0.68rem] font-bold px-2 py-0.5 rounded-full">
-                    {totalDocs}
-                  </span>
                 </button>
               );
             })}
@@ -345,11 +355,19 @@ const listaCategorias = Array.from(conteosPorCategoria.keys()).sort((a, b) => {
     let paginaActual = 1;
     let categoriaSeleccionada = "todas";
 
+    const limpiarParaComparar = (str: string) => {
+      return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    };
+
     const seleccionarCategoria = (valor: string) => {
-      categoriaSeleccionada = valor.toLowerCase().trim();
+      categoriaSeleccionada = limpiarParaComparar(valor);
 
       tabsCategoria.forEach((tab) => {
-        const tabVal = (tab.getAttribute("data-cat-valor") || "").toLowerCase().trim();
+        const tabVal = limpiarParaComparar(tab.getAttribute("data-cat-valor") || "");
         const esSeleccionado = tabVal === categoriaSeleccionada;
 
         if (esSeleccionado) {
@@ -416,7 +434,7 @@ const listaCategorias = Array.from(conteosPorCategoria.keys()).sort((a, b) => {
     // Función unificada de filtrado (Categoría + Búsqueda de texto + Paginación)
     const filtrarDocumentos = (scrollArriba = false) => {
       const q = (input?.value || "").toLowerCase().trim();
-      const catSeleccionada = categoriaSeleccionada.toLowerCase().trim();
+      const catSeleccionada = limpiarParaComparar(categoriaSeleccionada);
 
       if (btnLimpiar) {
         btnLimpiar.classList.toggle("hidden", !q);
@@ -426,7 +444,7 @@ const listaCategorias = Array.from(conteosPorCategoria.keys()).sort((a, b) => {
       const itemsCoincidentes: HTMLElement[] = [];
 
       items.forEach((item) => {
-        const itemCat = (item.getAttribute("data-categoria") || "").toLowerCase().trim();
+        const itemCat = limpiarParaComparar(item.getAttribute("data-categoria") || "");
         const texto = item.getAttribute("data-texto") || "";
         const coincideCategoria = catSeleccionada === "todas" || itemCat === catSeleccionada;
         const coincideTexto = !q || texto.includes(q);
@@ -611,7 +629,7 @@ const listaCategorias = Array.from(conteosPorCategoria.keys()).sort((a, b) => {
           const val = btn.getAttribute("data-sugerencia") || "";
           const tipo = btn.getAttribute("data-tipo");
           if (tipo === "categoria") {
-            seleccionarCategoria(val.toLowerCase());
+            seleccionarCategoria(val);
           } else if (input) {
             input.value = val;
             paginaActual = 1;

@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { ServicioRepositorio } from "../../../modules/repositorio/services/repositorio.service";
+import { detectarCategoriaValida } from "../../../modules/repositorio/utils/categoria.utils";
 
 export const prerender = false;
 
@@ -24,11 +25,15 @@ export const POST: APIRoute = async ({ request }) => {
         const tipoFuente = String(
           d.tipoFuente || d["Tipo de fuente"] || d["Tipo Fuente"] || d["Fuente"] || "Artículo de Investigación"
         ).trim();
-        const tipoDocumento = String(
-          d.categoria || d["Tipo de documento"] || d["Tipo Documento"] || d["Categoría"] || ""
+
+        // Extraer y normalizar Categoría oficial
+        const categoriaRaw = String(
+          d.categoria || d["Categoría"] || d["Categoria"] || d.tema || d["Tema"] || d["Tipo de documento"] || d["Tipo Documento"] || ""
         ).trim();
+        const categoriaNormalizada = detectarCategoriaValida(categoriaRaw) || categoriaRaw || "General";
+
         const lineaInvestigacion = String(
-          d.lineaInvestigacion || d["Tema central"] || d["Tema Central"] || d["Línea de investigación"] || d["Línea"] || "General"
+          d.lineaInvestigacion || d["Línea de investigación"] || d["Linea de investigacion"] || d["Línea"] || d["Tema central"] || d["Tema Central"] || "General"
         ).trim();
         const pais = String(d.pais || d["País"] || d["Pais"] || "Internacional").trim();
         const resumen = d.resumen || d["Resumen"] ? String(d.resumen || d["Resumen"]).trim() : undefined;
@@ -63,7 +68,7 @@ export const POST: APIRoute = async ({ request }) => {
           titulo,
           ano,
           tipoFuente,
-          categoria: tipoDocumento || undefined,
+          categoria: categoriaNormalizada || undefined,
           lineaInvestigacion,
           pais,
           autores,

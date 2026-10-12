@@ -17,6 +17,7 @@ import {
   RefreshIcon,
 } from "@solar-icons/react/outline";
 import { toast } from "@heroui/react";
+import { CATEGORIAS_VALIDAS, detectarCategoriaValida } from "../utils/categoria.utils";
 
 interface Props {
   abierto: boolean;
@@ -29,6 +30,7 @@ interface FilaExcelMapeada {
   ano: string;
   tipoDocumento: string;
   tipoFuente: string;
+  categoria: string;
   autores: string[];
   pais: string;
   lineaInvestigacion: string;
@@ -127,15 +129,34 @@ export const ModalCargaExcelRepositorio: React.FC<Props> = ({
           "Source",
           "Revista/Repositorio",
         ]);
+
+        // Nueva columna al lado de Tipo de fuente: Categoría
+        const categoriaRaw = encontrarValor([
+          "Categoría",
+          "Categoria",
+          "Tema",
+          "Temas",
+          "Eje temático",
+          "Eje tematico",
+          "Temática",
+          "Tematica",
+          "Topic",
+        ]);
+
+        // Detección tolerante a mayúsculas, minúsculas, tildes y semejanzas para las 4 categorías válidas
+        const categoriaDetectada = detectarCategoriaValida(categoriaRaw || tipoDocumento || "");
+        const categoriaFinal = categoriaDetectada || "General";
+
         const autoresStr = encontrarValor(["Autores", "Autor", "Authors", "Author"]);
         const pais = encontrarValor(["País", "Pais", "Country", "Nación"]);
         const temaCentral = encontrarValor([
-          "Tema central",
-          "Tema",
           "Línea de investigación",
           "Linea de investigacion",
           "Línea",
           "Linea",
+          "Tema central",
+          "Tema Central",
+          "Línea investigativa",
         ]);
         const resumen = encontrarValor(["Resumen", "Abstract", "Descripción", "Descripcion"]);
         const referenciaApa = encontrarValor(["Referencia APA", "Referencia apa", "Referencia", "APA"]);
@@ -170,6 +191,7 @@ export const ModalCargaExcelRepositorio: React.FC<Props> = ({
           ano: ano || String(new Date().getFullYear()),
           tipoDocumento: tipoDocumento || "Artículo de Investigación",
           tipoFuente: tipoFuente || "Repositorio Institucional",
+          categoria: categoriaFinal,
           autores: autoresArray.length > 0 ? autoresArray : ["Autor no especificado"],
           pais: pais || "Internacional",
           lineaInvestigacion: temaCentral || "General",
@@ -223,10 +245,11 @@ export const ModalCargaExcelRepositorio: React.FC<Props> = ({
         "Año",
         "Tipo de documento",
         "Tipo de fuente",
+        "Categoría",
         "Título",
         "Autores",
         "País",
-        "Tema central",
+        "Línea de investigación",
         "Resumen",
         "Referencia APA",
         "Enlace de acceso",
@@ -242,10 +265,11 @@ export const ModalCargaExcelRepositorio: React.FC<Props> = ({
       { wch: 10 }, // Año
       { wch: 24 }, // Tipo de documento
       { wch: 26 }, // Tipo de fuente
+      { wch: 20 }, // Categoría (Energía, Agua, Biodiversidad, Prácticas)
       { wch: 50 }, // Título
       { wch: 40 }, // Autores
       { wch: 18 }, // País
-      { wch: 45 }, // Tema central
+      { wch: 45 }, // Línea de investigación
       { wch: 55 }, // Resumen
       { wch: 50 }, // Referencia APA
       { wch: 40 }, // Enlace de acceso
@@ -263,7 +287,7 @@ export const ModalCargaExcelRepositorio: React.FC<Props> = ({
       const payload = filasMapeadas.map((f) => ({
         titulo: f.titulo,
         ano: f.ano,
-        categoria: f.tipoDocumento,
+        categoria: f.categoria || "General",
         tipoFuente: f.tipoFuente,
         autores: f.autores,
         pais: f.pais,
@@ -380,8 +404,19 @@ export const ModalCargaExcelRepositorio: React.FC<Props> = ({
                       : "Arrastra y suelta tu archivo Excel aquí o haz clic para examinar"}
                   </span>
                   <p className="text-xs text-[#787774] max-w-md m-0 leading-relaxed">
-                    Acepta formatos <strong>.XLSX</strong>, <strong>.XLS</strong> y <strong>.CSV</strong>. Compara automáticamente las columnas de Año, Tipo de documento, Tipo de fuente, Título, Autores, País, Tema central, Resumen, Referencia APA y Enlace.
+                    Acepta formatos <strong>.XLSX</strong>, <strong>.XLS</strong> y <strong>.CSV</strong>. Compara automáticamente las columnas de Año, Tipo de documento, Tipo de fuente, <strong>Categoría</strong> (al lado de Tipo de fuente), Título, Autores, País, etc.
                   </p>
+                  <div className="flex items-center gap-1.5 flex-wrap justify-center pt-1">
+                    <span className="text-[0.68rem] text-[#787774] font-semibold">Categorías oficiales:</span>
+                    {CATEGORIAS_VALIDAS.map((cat) => (
+                      <span
+                        key={cat}
+                        className="px-2 py-0.5 rounded-full text-[0.66rem] font-bold bg-[#0064c1]/10 text-[#0064c1] border border-[#0064c1]/20"
+                      >
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -486,6 +521,13 @@ export const ModalCargaExcelRepositorio: React.FC<Props> = ({
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 text-[0.68rem] text-[#787774]">
+                        {fila.categoria && (
+                          <span className="inline-flex items-center gap-1 bg-[#0064c1]/10 text-[#0064c1] px-2 py-0.5 rounded-md font-bold border border-[#0064c1]/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#0064c1]"></span>
+                            Categoría: {fila.categoria}
+                          </span>
+                        )}
+
                         <span className="inline-flex items-center gap-1 bg-white px-2 py-0.5 rounded-md border border-black/5 font-semibold text-[#0a0a0a]">
                           <BookBookmarkIcon size={11} className="text-[#0064c1]" />
                           {fila.tipoFuente}
