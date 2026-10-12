@@ -170,7 +170,65 @@ const administracion: Item[] = [
   :global(html.rol-estudiante) #sidebar-admin-section {
     display: none !important;
   }
+
+  /* Animación de resplandor para la barra superior de progreso */
+  @keyframes nav-bar-pulse {
+    0%, 100% {
+      filter: brightness(1) drop-shadow(0 0 5px rgba(56, 189, 248, 0.6));
+    }
+    50% {
+      filter: brightness(1.3) drop-shadow(0 0 12px rgba(56, 189, 248, 0.95));
+    }
+  }
+
+  #global-nav-progress-bar.nav-animating {
+    animation: nav-bar-pulse 1.2s ease-in-out infinite;
+  }
+
+  /* Animación sutil en el enlace mientras carga la página de destino */
+  .nav-item-loading {
+    position: relative;
+    opacity: 0.85;
+    pointer-events: none !important;
+  }
+
+  .nav-item-loading .nav-icon,
+  .nav-item-loading .nav-sub-icon {
+    animation: nav-icon-spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  @keyframes nav-icon-spin {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(0.8);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
 </style>
+
+<!-- Barra de carga superior global (persiste entre transiciones de Astro) -->
+<div
+  id="global-nav-loader"
+  transition:persist="global-navigation-loader"
+  class="pointer-events-none fixed inset-x-0 top-0 z-[99999] opacity-0 transition-opacity duration-200"
+  aria-hidden="true"
+>
+  <!-- Barra de progreso continua con brillo y gradiente -->
+  <div class="relative h-[3.5px] w-full overflow-hidden bg-transparent">
+    <div
+      id="global-nav-progress-bar"
+      class="h-full w-0 rounded-r-full transition-[width] duration-300 ease-out"
+      style="background: linear-gradient(90deg, #0064c1 0%, #2563eb 35%, #38bdf8 70%, #60a5fa 100%); box-shadow: 0 0 14px rgba(56, 189, 248, 0.9), 0 0 6px rgba(0, 100, 193, 0.7);"
+    ></div>
+  </div>
+</div>
 
 <!-- Barra Superior Móvil (solo visible en pantallas < lg) -->
 <header
@@ -569,6 +627,88 @@ const administracion: Item[] = [
 </aside>
 
 <script>
+  let isNavigating = false;
+  let currentNavUrl = "";
+  let navTimer: ReturnType<typeof setTimeout> | null = null;
+  let safetyTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function startNavProgress() {
+    const loaderContainer = document.getElementById("global-nav-loader");
+    const progressBar = document.getElementById("global-nav-progress-bar");
+
+    if (!loaderContainer || !progressBar) return;
+
+    if (navTimer) clearTimeout(navTimer);
+    if (safetyTimer) clearTimeout(safetyTimer);
+
+    loaderContainer.style.opacity = "1";
+    loaderContainer.style.display = "block";
+    progressBar.classList.add("nav-animating");
+    progressBar.style.transition = "width 260ms cubic-bezier(0.16, 1, 0.3, 1)";
+    progressBar.style.width = "22%";
+
+    navTimer = setTimeout(() => {
+      progressBar.style.transition = "width 480ms cubic-bezier(0.16, 1, 0.3, 1)";
+      progressBar.style.width = "58%";
+
+      navTimer = setTimeout(() => {
+        progressBar.style.transition = "width 850ms cubic-bezier(0.16, 1, 0.3, 1)";
+        progressBar.style.width = "82%";
+
+        navTimer = setTimeout(() => {
+          progressBar.style.transition = "width 1600ms ease-out";
+          progressBar.style.width = "94%";
+        }, 650);
+      }, 420);
+    }, 200);
+
+    safetyTimer = setTimeout(() => {
+      stopNavProgress();
+    }, 10000);
+  }
+
+  function stopNavProgress() {
+    const loaderContainer = document.getElementById("global-nav-loader");
+    const progressBar = document.getElementById("global-nav-progress-bar");
+
+    if (navTimer) clearTimeout(navTimer);
+    if (safetyTimer) clearTimeout(safetyTimer);
+
+    isNavigating = false;
+    currentNavUrl = "";
+
+    document.querySelectorAll(".nav-item-loading").forEach((el) => {
+      el.classList.remove("nav-item-loading");
+    });
+
+    if (progressBar && loaderContainer) {
+      progressBar.style.transition = "width 160ms ease-out";
+      progressBar.style.width = "100%";
+
+      setTimeout(() => {
+        loaderContainer.style.opacity = "0";
+        setTimeout(() => {
+          progressBar.classList.remove("nav-animating");
+          progressBar.style.transition = "none";
+          progressBar.style.width = "0%";
+        }, 220);
+      }, 160);
+    }
+  }
+
+  // Inicializar listeners globales de Astro View Transitions
+  if (!(window as any).__observatorioNavLoaderInitialized) {
+    (window as any).__observatorioNavLoaderInitialized = true;
+
+    document.addEventListener("astro:before-preparation", () => {
+      startNavProgress();
+    });
+
+    document.addEventListener("astro:page-load", () => {
+      stopNavProgress();
+    });
+  }
+
   function setupSidebar() {
     const sidebar = document.getElementById("main-sidebar");
     const toggleBtn = document.getElementById("toggle-sidebar-btn");
@@ -668,8 +808,33 @@ const administracion: Item[] = [
     navItems.forEach((el) => {
       if (!el.getAttribute("data-click-init")) {
         el.setAttribute("data-click-init", "true");
-        el.addEventListener("click", () => {
-          const targetHref = el.getAttribute("data-nav-href");
+        el.addEventListener("click", (e) => {
+          const targetHref = el.getAttribute("data-nav-href") || el.getAttribute("href") || "";
+          const targetLimpio = targetHref.replace(/\/$/, "");
+          const actualLimpio = window.location.pathname.replace(/\/$/, "");
+
+          // Si el usuario da clic en la misma página donde ya se encuentra, no recargar
+          if (targetLimpio === actualLimpio) {
+            e.preventDefault();
+            return;
+          }
+
+          // Si ya hay una navegación en curso hacia esta misma ruta, ignorar clics repetidos
+          if (isNavigating && currentNavUrl === targetLimpio) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
+
+          // Iniciar estado de navegación y loader inmediatamente
+          isNavigating = true;
+          currentNavUrl = targetLimpio;
+
+          document.querySelectorAll(".nav-item-loading").forEach((item) => item.classList.remove("nav-item-loading"));
+          el.classList.add("nav-item-loading");
+
+          startNavProgress();
+
           if (targetHref) {
             sincronizarEstadoActivo(targetHref);
           }
