@@ -1,6 +1,8 @@
 /**
  * Utilidades para detección, validación y normalización de Categorías del Repositorio.
- * Categorías oficiales admitidas: "Energía", "Agua", "Biodiversidad", "Prácticas".
+ * Categorías oficiales admitidas: "Energía", "Agua", "Biodiversidad", "Prácticas",
+ * "Financiamiento Climático", "Mercado del carbono", "Derecho Ambiental",
+ * "Consultas previas", "Comunicación sostenible" y "Educación Ambiental".
  */
 
 export const CATEGORIAS_VALIDAS = [
@@ -8,6 +10,12 @@ export const CATEGORIAS_VALIDAS = [
   "Agua",
   "Biodiversidad",
   "Prácticas",
+  "Financiamiento Climático",
+  "Mercado del carbono",
+  "Derecho Ambiental",
+  "Consultas previas",
+  "Comunicación sostenible",
+  "Educación Ambiental",
 ] as const;
 
 export type CategoriaValida = (typeof CATEGORIAS_VALIDAS)[number];
@@ -68,6 +76,10 @@ export function detectarCategoriaValida(input?: string | null): CategoriaValida 
   const texto = normalizarTexto(input);
   if (!texto) return "";
 
+  // 0. Coincidencia exacta con el nombre oficial (evita que palabras clave de otra categoría la capturen)
+  const exacta = CATEGORIAS_VALIDAS.find((c) => normalizarTexto(c) === texto);
+  if (exacta) return exacta;
+
   // 1. Reglas semánticas por raíces morfológicas y palabras clave
   // Categoría: Energía
   if (
@@ -110,12 +122,62 @@ export function detectarCategoriaValida(input?: string | null): CategoriaValida 
     return "Prácticas";
   }
 
+  // Categoría: Financiamiento Climático
+  if (
+    texto.includes("financiamiento clim") ||
+    texto.includes("finanzas clim") ||
+    texto.includes("financiacion clim") ||
+    (texto.includes("financ") && texto.includes("clim"))
+  ) {
+    return "Financiamiento Climático";
+  }
+
+  // Categoría: Mercado del carbono
+  if (texto.includes("carbon")) {
+    return "Mercado del carbono";
+  }
+
+  // Categoría: Derecho Ambiental
+  if (
+    texto.includes("derecho ambient") ||
+    texto.includes("legislacion ambient") ||
+    (texto.includes("derecho") && texto.includes("ambient")) ||
+    (texto.includes("normativ") && texto.includes("ambient"))
+  ) {
+    return "Derecho Ambiental";
+  }
+
+  // Categoría: Consultas previas
+  if (
+    texto.includes("consulta previa") ||
+    texto.includes("consultas previas") ||
+    (texto.includes("consulta") && texto.includes("previ"))
+  ) {
+    return "Consultas previas";
+  }
+
+  // Categoría: Comunicación sostenible
+  if (texto.includes("comunicacion") && texto.includes("sostenib")) {
+    return "Comunicación sostenible";
+  }
+
+  // Categoría: Educación Ambiental
+  if (texto.includes("educacion") && texto.includes("ambient")) {
+    return "Educación Ambiental";
+  }
+
   // 2. Coincidencia por distancia de edición (Levenshtein) con las categorías canónicas
   const objetivos: { categoria: CategoriaValida; clave: string }[] = [
     { categoria: "Energía", clave: "energia" },
     { categoria: "Agua", clave: "agua" },
     { categoria: "Biodiversidad", clave: "biodiversidad" },
     { categoria: "Prácticas", clave: "practicas" },
+    { categoria: "Financiamiento Climático", clave: "financiamiento climatico" },
+    { categoria: "Mercado del carbono", clave: "mercado del carbono" },
+    { categoria: "Derecho Ambiental", clave: "derecho ambiental" },
+    { categoria: "Consultas previas", clave: "consultas previas" },
+    { categoria: "Comunicación sostenible", clave: "comunicacion sostenible" },
+    { categoria: "Educación Ambiental", clave: "educacion ambiental" },
   ];
 
   // Evaluar palabras individuales
