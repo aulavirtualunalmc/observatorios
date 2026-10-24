@@ -26,13 +26,17 @@ import { BrandingAcceso, CardAcceso } from "../modules/auth";
 
 
       <div
-        class="relative z-10 w-full min-h-svh flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-[clamp(4rem,7vw,8rem)] px-[clamp(1.25rem,4vw,4.5rem)] py-[clamp(2rem,5vh,4rem)]"
+        class="relative z-10 w-full min-h-svh grid content-start lg:content-normal lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]"
       >
-        <!-- Branding del Dominio Auth -->
+        <!-- Branding del Dominio Auth: pintura a sangre (banner en móvil) -->
         <BrandingAcceso />
 
-        <!-- Tarjeta de Acceso del Dominio Auth -->
-        <CardAcceso />
+        <!-- Tarjeta de Acceso del Dominio Auth (se solapa sobre el banner en móvil) -->
+        <div
+          class="relative z-10 flex items-start lg:items-center justify-center px-3 pb-6 sm:px-6 lg:px-[clamp(1.25rem,4vw,4.5rem)] lg:pb-0 lg:py-[clamp(2rem,5vh,4rem)]"
+        >
+          <CardAcceso />
+        </div>
       </div>
 
       <FormToasts

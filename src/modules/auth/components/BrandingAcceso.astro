@@ -1,46 +1,200 @@
 ---
 /**
  * Componente de Branding para la vista de Acceso
+ * Card de pintura simple, sin bordes, con margen respecto a los bordes de la pantalla.
+ * - Fundido suave entre obras con zoom lento
+ * - Logo sobre una cápsula blanca, texto sobre un degradado solo abajo
+ * - Puntos de navegación y flechas simples
  */
+import {
+  AltArrowLeftIcon,
+  AltArrowRightIcon,
+} from "@solar-icons/react/outline";
 ---
 
-<div
-  class="flex flex-col items-center lg:items-start text-center lg:text-left lg:max-w-[36rem] w-full"
+<section
+  id="branding-art-card"
+  class="relative isolate overflow-hidden bg-slate-300 mx-3 mt-3 mb-4 sm:mx-6 sm:mt-6h-[54svh] min-h-[420px] sm:h-[46svh] sm:min-h-[380px] rounded-[28px] lg:m-5 lg:h-[calc(100svh-2.5rem)] lg:sticky lg:top-5 lg:rounded-[32px] shadow-[0_30px_70px_-24px_rgba(9,60,120,0.45)] animate-rise select-none"
   aria-labelledby="main-title"
 >
   <h1 id="main-title" class="sr-only">
     Observatorio de Responsabilidad Social y Sostenibilidad
   </h1>
 
-  <!-- Logotipo Principal -->
-  <div
-    class="w-full flex justify-center lg:justify-start animate-rise"
-    style="animation-delay: 0.1s"
-  >
-    <img
-      src="/logo observatorio RS.png"
-      alt="Observatorio de Responsabilidad Social y Sostenibilidad"
-      class="w-full max-w-[310px] sm:max-w-[370px] lg:max-w-[410px] h-auto object-contain transition-transform duration-300 hover:scale-[1.01] select-none"
-    />
+  <img
+    src="/Imagen1.jpeg"
+    alt="Pintura de paisaje montañoso y amanecer por Alba"
+    class="art-slide is-active"
+  />
+  <img
+    src="/Imagen2.jpeg"
+    alt="Pintura de humedal y selva tropical por Alba"
+    class="art-slide"
+  />
+
+  <div class="art-shade" aria-hidden="true"></div>
+
+  <div class="absolute inset-0 z-10 flex flex-col justify-between p-5 sm:p-7 lg:p-12">
+    <div class="max-w-[32rem] text-white mt-auto">
+      <p class="m-0 max-w-[30rem] text-[0.84rem] sm:text-[0.9rem] lg:text-[0.95rem] leading-[1.6] sm:leading-[1.7] text-white/90">
+        El <strong class="font-semibold text-white">Observatorio de Responsabilidad Social y Sostenibilidad</strong>{" "}
+        es una plataforma de conocimiento y aprendizaje sobre temas de responsabilidad social y sostenibilidad.
+      </p>
+
+      <div class="flex items-center gap-4 mt-5 lg:mt-7">
+        <div class="flex items-center gap-2" role="tablist" aria-label="Seleccionar pintura">
+          <button type="button" class="art-dot" data-index="0" role="tab" aria-selected="true" aria-label="Pintura 1"></button>
+          <button type="button" class="art-dot" data-index="1" role="tab" aria-selected="false" aria-label="Pintura 2"></button>
+        </div>
+        <div class="flex gap-1 ml-auto">
+          <button type="button" class="btn-art-prev art-arrow" aria-label="Pintura anterior">
+            <AltArrowLeftIcon size={20} strokeWidth={2.4} />
+          </button>
+          <button type="button" class="btn-art-next art-arrow" aria-label="Siguiente pintura">
+            <AltArrowRightIcon size={20} strokeWidth={2.4} />
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
+</section>
 
-  <!-- Línea decorativa de acento -->
-  <div
-    class="h-[3px] w-16 rounded-full bg-gradient-to-r from-[#0064c1] via-[#4fa3ff] to-transparent animate-rise mx-auto lg:mx-0 mt-7 mb-6"
-    style="animation-delay: 0.2s"
-    aria-hidden="true"
-  ></div>
+<style>
+  .art-slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1.08);
+    transition: opacity 1.4s ease-in-out;
+  }
+  .art-slide.is-active {
+    opacity: 1;
+    animation: art-zoom 12s ease-out forwards;
+  }
+  @keyframes art-zoom {
+    from { transform: scale(1.08); }
+    to   { transform: scale(1); }
+  }
 
-  <!-- Texto descriptivo institucional -->
-  <p
-    class="m-0 max-w-[44ch] text-[#1c2e42] text-[clamp(1.02rem,1.25vw,1.18rem)] leading-[1.7] font-normal tracking-[-0.012em] animate-rise"
-    style="animation-delay: 0.28s"
-  >
-    El{" "}
-    <strong class="font-semibold text-[#0a1e36]"
-      >Observatorio de Responsabilidad Social y Sostenibilidad</strong
-    >{" "}
-    es una plataforma de conocimiento y aprendizaje sobre temas de
-    responsabilidad social y sostenibilidad.
-  </p>
-</div>
+  .art-shade {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 75%;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(
+      to top,
+      rgba(6, 18, 36, 0.88) 0%,
+      rgba(6, 18, 36, 0.6) 45%,
+      rgba(6, 18, 36, 0) 100%
+    );
+  }
+
+  .art-dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.45);
+    cursor: pointer;
+    transition: width 0.4s ease, background 0.4s ease;
+  }
+  .art-dot[aria-selected="true"] {
+    width: 26px;
+    background: #fff;
+  }
+
+  .art-arrow {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    color: #fff;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .art-arrow:hover { background: rgba(255, 255, 255, 0.2); }
+
+  #branding-art-card.is-paused .art-slide { animation-play-state: paused; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .art-slide.is-active { animation: none; transform: none; }
+  }
+</style>
+
+<script>
+  function setupDirectArtCard() {
+    const card = document.getElementById("branding-art-card");
+    if (!card) return;
+
+    const slides = Array.from(card.querySelectorAll<HTMLImageElement>(".art-slide"));
+    const dots = Array.from(card.querySelectorAll<HTMLButtonElement>(".art-dot"));
+    const prevBtn = card.querySelector<HTMLButtonElement>(".btn-art-prev");
+    const nextBtn = card.querySelector<HTMLButtonElement>(".btn-art-next");
+
+    if (slides.length <= 1) return;
+
+    let currentIndex = 0;
+    let timer: number | undefined;
+    let isPaused = false;
+    const INTERVAL = 7000;
+
+    const showSlide = (targetIndex: number) => {
+      currentIndex = (targetIndex + slides.length) % slides.length;
+
+      slides.forEach((slide, i) => {
+        slide.classList.toggle("is-active", i === currentIndex);
+      });
+      dots.forEach((dot, i) => {
+        dot.setAttribute("aria-selected", i === currentIndex ? "true" : "false");
+      });
+    };
+
+    const startTimer = () => {
+      window.clearInterval(timer);
+      timer = window.setInterval(() => {
+        if (!isPaused) showSlide(currentIndex + 1);
+      }, INTERVAL);
+    };
+
+    dots.forEach((dot) => {
+      dot.addEventListener("click", () => {
+        showSlide(Number(dot.dataset.index));
+        startTimer();
+      });
+    });
+
+    prevBtn?.addEventListener("click", () => {
+      showSlide(currentIndex - 1);
+      startTimer();
+    });
+
+    nextBtn?.addEventListener("click", () => {
+      showSlide(currentIndex + 1);
+      startTimer();
+    });
+
+    card.addEventListener("mouseenter", () => {
+      isPaused = true;
+      card.classList.add("is-paused");
+    });
+
+    card.addEventListener("mouseleave", () => {
+      isPaused = false;
+      card.classList.remove("is-paused");
+    });
+
+    startTimer();
+  }
+
+  setupDirectArtCard();
+  document.addEventListener("astro:page-load", setupDirectArtCard);
+</script>
