@@ -3,7 +3,6 @@ import SkyShader from "../../../components/SkyShader.astro";
 import { ServicioDashboard } from "../services/dashboard.service";
 import {
   LinkIcon,
-  ClockCircleIcon,
   StarsMinimalisticIcon,
   ArrowRightIcon,
   AltArrowLeftIcon,
@@ -138,19 +137,6 @@ const noticias = datos.noticias || [];
                 <!-- Cuerpo de la Noticia -->
                 <div class="flex flex-col flex-1 p-4 sm:p-5 justify-between gap-3">
                   <div class="flex flex-col gap-1.5">
-                    <div class="flex items-center gap-2 text-[0.72rem] font-semibold text-[#787774]">
-                      <span>{item.fecha}</span>
-                      {item.lecturaMinutos && (
-                        <>
-                          <span>•</span>
-                          <span class="flex items-center gap-1 text-[0.68rem]">
-                            <ClockCircleIcon size={11} strokeWidth={1.5} />
-                            {item.lecturaMinutos} min de lectura
-                          </span>
-                        </>
-                      )}
-                    </div>
-
                     <h3 class="m-0 text-sm sm:text-[0.96rem] font-bold text-[#0a0a0a] tracking-tight leading-snug group-hover:text-[#0064c1] transition-colors duration-300 line-clamp-2">
                       {item.titulo}
                     </h3>
