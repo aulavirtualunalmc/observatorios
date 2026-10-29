@@ -9,25 +9,17 @@ import {
 ---
 
 <div
-  class="w-full max-w-[30rem] shrink-0 bg-white border border-white rounded-[24px] md:rounded-[28px] p-7 md:p-10 shadow-[0_30px_70px_-24px_rgba(9,60,120,0.55)] lg:max-h-[calc(100svh-3rem)] lg:overflow-y-auto animate-rise"
+  class="w-full max-w-[30rem] shrink-0 card-acceso bg-white/50 backdrop-blur-md rounded-[24px] md:rounded-[28px] p-7 md:p-10 shadow-[0_30px_70px_-24px_rgba(6,18,36,0.6)] lg:max-h-[calc(100svh-3rem)] lg:overflow-y-auto animate-rise"
   style="animation-delay: 0.25s"
 >
   <div
-    class="flex flex-col items-center gap-2 text-center pb-5 mb-5 border-b border-black/10"
+    class="flex flex-col items-center gap-2 text-center pb-2 mb-4"
   >
     <img
       src="/logo observatorio RS.png"
       alt="Observatorio de Responsabilidad Social y Sostenibilidad"
-      class="h-12 w-auto object-contain mb-2 lg:hidden"
+      class="h-16 md:h-20 w-auto object-contain mb-2"
     />
-    <h2
-      class="m-0 text-[clamp(1.4rem,2vw,1.75rem)] font-[600] tracking-[-0.02em] text-[#0a0a0a]"
-    >
-      Inicia sesión
-    </h2>
-    <p class="m-0 text-[#2f3437] text-sm leading-[1.55] tracking-[-0.01em]">
-      para ver el contenido de la plataforma.
-    </p>
   </div>
 
   <!-- Formulario de Acceso -->
@@ -65,7 +57,7 @@ import {
       <button
         type="submit"
         id="btn-login-submit"
-        class="group relative w-full inline-flex items-center justify-center gap-2 mt-1 px-8 py-4 rounded-full text-white text-base font-semibold tracking-[-0.01em] whitespace-nowrap cursor-pointer overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.985] focus-visible:outline-2 focus-visible:outline-[#0064c1] focus-visible:outline-offset-[3px] disabled:opacity-85 disabled:cursor-not-allowed disabled:pointer-events-none"
+        class="group relative flex w-2/3 min-w-[10rem] mx-auto items-center justify-center gap-2 mt-1 px-5 py-2 rounded-full text-white text-sm font-semibold tracking-[-0.01em] whitespace-nowrap cursor-pointer overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-[0.985] focus-visible:outline-2 focus-visible:outline-[#0064c1] focus-visible:outline-offset-[3px] disabled:opacity-85 disabled:cursor-not-allowed disabled:pointer-events-none"
         style="background-image: radial-gradient(120% 80% at 50% 0%, #ffffff42, #ffffff0a 36%, #ffffff00 54%), linear-gradient(#66b2ff, #4fa3ff 56%, #4a9ffb); box-shadow: inset 0 1.5px 1px rgba(255,255,255,0.5), inset 0 9px 16px -10px rgba(255,255,255,0.3), inset 0 -14px 22px -10px rgba(26,106,202,0.5), 0 8px 22px -6px rgba(58,138,244,0.4), 0 6px 32px -2px rgba(120,185,255,0.58); text-shadow: 0 1px 2px rgba(18,86,175,0.32)"
       >
         <!-- Estado normal -->
@@ -73,7 +65,7 @@ import {
           id="btn-login-content"
           class="relative z-10 flex items-center justify-center gap-2 transition-opacity duration-200"
         >
-          <span>Entrar</span>
+          <span>Iniciar sesión</span>
           <ArrowRightIcon
             size={18}
             strokeWidth={2}
@@ -133,13 +125,26 @@ import {
     </div>
 
     <div
-      class="flex flex-col items-center gap-3 mt-6 pt-5 border-t border-black/5 animate-rise"
+      class="flex flex-col items-center gap-3 mt-5 animate-rise"
       style="animation-delay: 0.58s"
     >
-      <Link href="/red" className="text-sm font-medium text-[#0064c1]">
-        Registrarse
+      <Link href="/red" className="text-base font-semibold text-[#0f2fe8]">
+        Registrarse para ver el contenido
         <Link.Icon />
       </Link>
     </div>
   </form>
 </div>
+
+<style>
+  .card-acceso :global(label + div) {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(6px);
+  }
+  .card-acceso :global(label + div:not(:focus-within)) {
+    border-color: transparent;
+  }
+  .card-acceso :global(label + div:focus-within) {
+    background: rgba(255, 255, 255, 0.65);
+  }
+</style>
