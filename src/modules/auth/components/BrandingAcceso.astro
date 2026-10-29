@@ -14,7 +14,7 @@ import {
 
 <section
   id="branding-art-card"
-  class="relative isolate overflow-hidden bg-slate-300 mx-3 mt-3 mb-4 sm:mx-6 sm:mt-6h-[54svh] min-h-[420px] sm:h-[46svh] sm:min-h-[380px] rounded-[28px] lg:m-5 lg:h-[calc(100svh-2.5rem)] lg:sticky lg:top-5 lg:rounded-[32px] shadow-[0_30px_70px_-24px_rgba(9,60,120,0.45)] animate-rise select-none"
+  class="absolute inset-0 z-0 isolate overflow-hidden bg-slate-300 select-none"
   aria-labelledby="main-title"
 >
   <h1 id="main-title" class="sr-only">
@@ -34,19 +34,25 @@ import {
 
   <div class="art-shade" aria-hidden="true"></div>
 
-  <div class="absolute inset-0 z-10 flex flex-col justify-between p-5 sm:p-7 lg:p-12">
-    <div class="max-w-[32rem] text-white mt-auto">
-      <p class="m-0 max-w-[30rem] text-[0.84rem] sm:text-[0.9rem] lg:text-[0.95rem] leading-[1.6] sm:leading-[1.7] text-white/90">
+  <div class="absolute inset-0 z-10 flex flex-col justify-center p-5 sm:p-7 lg:px-[clamp(2rem,6vw,6rem)] lg:py-12">
+    <div class="hidden lg:flex flex-col items-center text-center text-white w-[calc(100%-min(34rem,42vw))] pr-[clamp(1rem,3vw,3rem)]">
+      <img
+        src="/logo observatorio RS.png"
+        alt="Observatorio de Responsabilidad Social y Sostenibilidad"
+        class="h-20 xl:h-24 w-auto object-contain mb-8 brightness-0 invert drop-shadow-[0_4px_18px_rgba(0,0,0,0.35)]"
+      />
+      <div class="w-16 h-px bg-white/60 mb-8" aria-hidden="true"></div>
+      <p class="m-0 max-w-[36rem] text-[1.2rem] xl:text-[1.5rem] leading-[1.55] text-white/95 [text-shadow:0_2px_14px_rgba(0,0,0,0.4)]">
         El <strong class="font-semibold text-white">Observatorio de Responsabilidad Social y Sostenibilidad</strong>{" "}
         es una plataforma de conocimiento y aprendizaje sobre temas de responsabilidad social y sostenibilidad.
       </p>
 
-      <div class="flex items-center gap-4 mt-5 lg:mt-7">
+      <div class="flex items-center justify-center gap-4 mt-8">
         <div class="flex items-center gap-2" role="tablist" aria-label="Seleccionar pintura">
           <button type="button" class="art-dot" data-index="0" role="tab" aria-selected="true" aria-label="Pintura 1"></button>
           <button type="button" class="art-dot" data-index="1" role="tab" aria-selected="false" aria-label="Pintura 2"></button>
         </div>
-        <div class="flex gap-1 ml-auto">
+        <div class="flex gap-1">
           <button type="button" class="btn-art-prev art-arrow" aria-label="Pintura anterior">
             <AltArrowLeftIcon size={20} strokeWidth={2.4} />
           </button>
@@ -81,16 +87,17 @@ import {
 
   .art-shade {
     position: absolute;
-    inset: auto 0 0 0;
-    height: 75%;
+    inset: 0;
     z-index: 1;
     pointer-events: none;
-    background: linear-gradient(
-      to top,
-      rgba(6, 18, 36, 0.88) 0%,
-      rgba(6, 18, 36, 0.6) 45%,
-      rgba(6, 18, 36, 0) 100%
-    );
+    background:
+      radial-gradient(
+        ellipse 60% 55% at 28% 50%,
+        rgba(6, 18, 36, 0.62) 0%,
+        rgba(6, 18, 36, 0.35) 55%,
+        rgba(6, 18, 36, 0) 100%
+      ),
+      linear-gradient(to top, rgba(6, 18, 36, 0.45) 0%, rgba(6, 18, 36, 0) 50%);
   }
 
   .art-dot {
