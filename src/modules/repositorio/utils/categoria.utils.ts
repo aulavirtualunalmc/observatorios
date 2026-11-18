@@ -2,7 +2,7 @@
  * Utilidades para detección, validación y normalización de Categorías del Repositorio.
  * Categorías oficiales admitidas: "Energía", "Agua", "Biodiversidad", "Prácticas",
  * "Financiamiento Climático", "Mercado del carbono", "Derecho Ambiental",
- * "Consultas previas", "Comunicación sostenible" y "Educación Ambiental".
+ * "Comunicación sostenible" y "Educación Ambiental".
  */
 
 export const CATEGORIAS_VALIDAS = [
@@ -13,7 +13,6 @@ export const CATEGORIAS_VALIDAS = [
   "Financiamiento Climático",
   "Mercado del carbono",
   "Derecho Ambiental",
-  "Consultas previas",
   "Comunicación sostenible",
   "Educación Ambiental",
 ] as const;
@@ -147,15 +146,6 @@ export function detectarCategoriaValida(input?: string | null): CategoriaValida 
     return "Derecho Ambiental";
   }
 
-  // Categoría: Consultas previas
-  if (
-    texto.includes("consulta previa") ||
-    texto.includes("consultas previas") ||
-    (texto.includes("consulta") && texto.includes("previ"))
-  ) {
-    return "Consultas previas";
-  }
-
   // Categoría: Comunicación sostenible
   if (texto.includes("comunicacion") && texto.includes("sostenib")) {
     return "Comunicación sostenible";
@@ -175,7 +165,6 @@ export function detectarCategoriaValida(input?: string | null): CategoriaValida 
     { categoria: "Financiamiento Climático", clave: "financiamiento climatico" },
     { categoria: "Mercado del carbono", clave: "mercado del carbono" },
     { categoria: "Derecho Ambiental", clave: "derecho ambiental" },
-    { categoria: "Consultas previas", clave: "consultas previas" },
     { categoria: "Comunicación sostenible", clave: "comunicacion sostenible" },
     { categoria: "Educación Ambiental", clave: "educacion ambiental" },
   ];
